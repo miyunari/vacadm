@@ -10,6 +10,8 @@ import (
 	"github.com/MninaTB/vacadm/api/v1/team"
 	"github.com/MninaTB/vacadm/api/v1/user"
 	"github.com/MninaTB/vacadm/api/v1/vaccation"
+	vaccationrequest "github.com/MninaTB/vacadm/api/v1/vaccation_request"
+	vaccationressources "github.com/MninaTB/vacadm/api/v1/vaccation_ressource"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/database/inmemory"
 )
@@ -41,6 +43,20 @@ func main() {
 	router.Path("/vaccation").Methods(http.MethodGet).HandlerFunc(vacSvc.List)
 	router.Path("/vaccation").Methods(http.MethodPatch).HandlerFunc(vacSvc.Update)
 	router.Path("/vaccation/{vaccationID}").Methods(http.MethodDelete).HandlerFunc(vacSvc.Delete)
+
+	vacReqSvc := vaccationrequest.NewVaccationRequest(db, logger)
+	router.Path("/vaccation-request").Methods(http.MethodPut).HandlerFunc(vacReqSvc.Create)
+	router.Path("/vaccation-request/{vaccation-requestID}").Methods(http.MethodGet).HandlerFunc(vacReqSvc.GetByID)
+	router.Path("/vaccation-request").Methods(http.MethodGet).HandlerFunc(vacReqSvc.List)
+	router.Path("/vaccation-request").Methods(http.MethodPatch).HandlerFunc(vacReqSvc.Update)
+	router.Path("/vaccation-request/{vaccation-requestID}").Methods(http.MethodDelete).HandlerFunc(vacReqSvc.Delete)
+
+	vacResSvc := vaccationressources.NewVaccationRessource(db, logger)
+	router.Path("/vaccation-ressource").Methods(http.MethodPut).HandlerFunc(vacResSvc.Create)
+	router.Path("/vaccation-ressource/{vaccation-ressourceID}").Methods(http.MethodGet).HandlerFunc(vacResSvc.GetByID)
+	router.Path("/vaccation-ressource").Methods(http.MethodGet).HandlerFunc(vacResSvc.List)
+	router.Path("/vaccation-ressource").Methods(http.MethodPatch).HandlerFunc(vacResSvc.Update)
+	router.Path("/vaccation-ressource/{vaccation-ressourceID}").Methods(http.MethodDelete).HandlerFunc(vacResSvc.Delete)
 
 	const addr = ":8080"
 	log.Println("Starte Server auf Port", addr)
