@@ -10,3 +10,7 @@ type VaccationRequest struct {
 	DeletedAt time.Time `json:"deleted_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+func (vr VaccationRequest) Copy() *VaccationRequest {
+	return &vr
+}
