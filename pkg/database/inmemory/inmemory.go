@@ -11,18 +11,22 @@ import (
 
 func NewInmemoryDB() *inmemoryDB {
 	return &inmemoryDB{
-		userStore:      make([]*model.User, 0),
-		teamStore:      make([]*model.Team, 0),
-		vaccationStore: make([]*model.Vaccation, 0),
-		logger:         logrus.New().WithField("component", "inmemoryDB"),
+		userStore:               make([]*model.User, 0),
+		teamStore:               make([]*model.Team, 0),
+		vaccationStore:          make([]*model.Vaccation, 0),
+		vaccationRequestStore:   make([]*model.VaccationRequest, 0),
+		vaccationRessourceStore: make([]*model.VaccationRessource, 0),
+		logger:                  logrus.New().WithField("component", "inmemoryDB"),
 	}
 }
 
 type inmemoryDB struct {
-	userStore      []*model.User
-	teamStore      []*model.Team
-	vaccationStore []*model.Vaccation
-	logger         logrus.FieldLogger
+	userStore               []*model.User
+	teamStore               []*model.Team
+	vaccationStore          []*model.Vaccation
+	vaccationRequestStore   []*model.VaccationRequest
+	vaccationRessourceStore []*model.VaccationRessource
+	logger                  logrus.FieldLogger
 }
 
 func (i *inmemoryDB) CreateUser(user *model.User) (*model.User, error) {
@@ -172,4 +176,90 @@ func (i *inmemoryDB) DeleteVaccation(id string) error {
 	}
 	i.logger.Error("vaccation didn't exist")
 	return errors.New("vaccation didn't exist")
+}
+
+func (i *inmemoryDB) CreateVaccationRequest(vacReq *model.VaccationRequest) (*model.VaccationRequest, error) {
+	vacReq.CreatedAt = time.Now()
+	vacReq.ID = uuid.NewString()
+	vacReqCopy := vacReq.Copy()
+
+	i.logger.Info("create vaccation-request with id: ", vacReq.ID)
+	i.vaccationRequestStore = append(i.vaccationRequestStore, vacReqCopy)
+	return vacReq, nil
+}
+
+func (i *inmemoryDB) GetVaccationRequestByID(id string) (*model.VaccationRequest, error) {
+	for _, s := range i.vaccationRequestStore {
+		if s.ID == id {
+			i.logger.Info("get vaccation-request with id: ", id)
+			return s.Copy(), nil
+		}
+	}
+	i.logger.Error("no vaccation-request found")
+	return nil, errors.New("no vaccation-request found")
+}
+
+func (i *inmemoryDB) ListVaccationRequests() ([]*model.VaccationRequest, error) {
+	i.logger.Info("get list of vaccation-requests")
+	return i.vaccationRequestStore, nil
+}
+
+func (i *inmemoryDB) UpdateVaccationRequest(vaccationRequest *model.VaccationRequest) (*model.VaccationRequest, error) {
+	i.logger.Error("update failed: no update on vaccation-request possible")
+	return nil, errors.New("update failed: no update on vaccation-request possible")
+}
+
+func (i *inmemoryDB) DeleteVaccationRequest(id string) error {
+	for x, vaccationRequest := range i.vaccationRequestStore {
+		if vaccationRequest.ID == id {
+			i.logger.Info("delete vaccation-request with id: ", vaccationRequest.ID)
+			i.vaccationRequestStore = append(i.vaccationRequestStore[:x], i.vaccationRequestStore[x+1:]...)
+			return nil
+		}
+	}
+	i.logger.Error("vaccation-request didn't exist")
+	return errors.New("vaccation-request didn't exist")
+}
+
+func (i *inmemoryDB) CreateVaccationRessource(vacRes *model.VaccationRessource) (*model.VaccationRessource, error) {
+	vacRes.CreatedAt = time.Now()
+	vacRes.ID = uuid.NewString()
+	vacResCopy := vacRes.Copy()
+
+	i.logger.Info("create vaccation-ressource with id: ", vacRes.ID)
+	i.vaccationRessourceStore = append(i.vaccationRessourceStore, vacResCopy)
+	return vacRes, nil
+}
+
+func (i *inmemoryDB) GetVaccationRessourceByID(id string) (*model.VaccationRessource, error) {
+	for _, s := range i.vaccationRessourceStore {
+		if s.ID == id {
+			i.logger.Info("get vaccation-ressource with id: ", id)
+			return s.Copy(), nil
+		}
+	}
+	i.logger.Error("no vaccation-ressource found")
+	return nil, errors.New("no vaccation-ressource found")
+}
+
+func (i *inmemoryDB) ListVaccationRessource() ([]*model.VaccationRessource, error) {
+	i.logger.Info("get list of vaccation-ressource")
+	return i.vaccationRessourceStore, nil
+}
+
+func (i *inmemoryDB) UpdateVaccationRessource(vaccationRessources *model.VaccationRessource) (*model.VaccationRessource, error) {
+	i.logger.Error("update failed: no update on vaccation-ressource possible")
+	return nil, errors.New("update failed: no update on vaccation-ressource possible")
+}
+
+func (i *inmemoryDB) DeleteVaccationRessource(id string) error {
+	for x, vaccationRessource := range i.vaccationRessourceStore {
+		if vaccationRessource.ID == id {
+			i.logger.Info("delete vaccation-ressource with id: ", vaccationRessource.ID)
+			i.vaccationRessourceStore = append(i.vaccationRessourceStore[:x], i.vaccationRessourceStore[x+1:]...)
+			return nil
+		}
+	}
+	i.logger.Error("vaccation-ressource didn't exist")
+	return errors.New("vaccation-ressource didn't exist")
 }

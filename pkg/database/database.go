@@ -22,4 +22,16 @@ type Database interface {
 	ListVaccations() ([]*model.Vaccation, error)
 	UpdateVaccation(*model.Vaccation) (*model.Vaccation, error)
 	DeleteVaccation(string) error
+
+	CreateVaccationRequest(*model.VaccationRequest) (*model.VaccationRequest, error)
+	GetVaccationRequestByID(string) (*model.VaccationRequest, error)
+	ListVaccationRequests() ([]*model.VaccationRequest, error)
+	UpdateVaccationRequest(*model.VaccationRequest) (*model.VaccationRequest, error)
+	DeleteVaccationRequest(string) error
+
+	CreateVaccationRessource(*model.VaccationRessource) (*model.VaccationRessource, error)
+	GetVaccationRessourceByID(string) (*model.VaccationRessource, error)
+	ListVaccationRessource() ([]*model.VaccationRessource, error)
+	UpdateVaccationRessource(*model.VaccationRessource) (*model.VaccationRessource, error)
+	DeleteVaccationRessource(string) error
 }
