@@ -26,6 +26,7 @@ type userService struct {
 
 func (u *userService) Create(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "create")
+	logger.Info("create new user")
 	var usr model.User
 	err := json.NewDecoder(r.Body).Decode(&usr)
 	if err != nil {
@@ -51,6 +52,7 @@ func (u *userService) Create(w http.ResponseWriter, r *http.Request) {
 
 func (u *userService) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "read")
+	logger.Info("get user by id")
 	userID, err := extractUserID(r)
 	if err != nil {
 		logger.Error(err)
@@ -90,6 +92,7 @@ func (u *userService) List(w http.ResponseWriter, r *http.Request) {
 
 func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "update")
+	logger.Info("update user")
 	var usr model.User
 	err := json.NewDecoder(r.Body).Decode(&usr)
 	if err != nil {
@@ -113,6 +116,7 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 
 func (u *userService) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "delete")
+	logger.Info("delete user")
 	userID, err := extractUserID(r)
 	if err != nil {
 		logger.Error(err)

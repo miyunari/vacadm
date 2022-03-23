@@ -25,6 +25,7 @@ type vaccation struct {
 
 func (v *vaccation) Create(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "create")
+	logger.Info("create new vaccation")
 	var vac model.Vaccation
 	err := json.NewDecoder(r.Body).Decode(&vac)
 	if err != nil {
@@ -50,6 +51,7 @@ func (v *vaccation) Create(w http.ResponseWriter, r *http.Request) {
 
 func (v *vaccation) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "read")
+	logger.Info("get vaccation by id")
 	vacID, err := extractVaccationID(r)
 	if err != nil {
 		logger.Error(err)
@@ -72,6 +74,7 @@ func (v *vaccation) GetByID(w http.ResponseWriter, r *http.Request) {
 
 func (v *vaccation) List(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "list")
+	logger.Info("get vaccation list")
 	list, err := v.store.ListVaccations()
 	if err != nil {
 		logger.Error(err)
@@ -93,6 +96,7 @@ func (v *vaccation) Update(w http.ResponseWriter, r *http.Request) {
 
 func (v *vaccation) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "delete")
+	logger.Info("delete vaccation")
 	vacID, err := extractVaccationID(r)
 	if err != nil {
 		logger.Error(err)

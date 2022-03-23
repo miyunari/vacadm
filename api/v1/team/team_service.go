@@ -25,6 +25,7 @@ type teamService struct {
 
 func (t *teamService) Create(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "create")
+	logger.Info("create new team")
 	var team model.Team
 	err := json.NewDecoder(r.Body).Decode(&team)
 	if err != nil {
@@ -50,6 +51,7 @@ func (t *teamService) Create(w http.ResponseWriter, r *http.Request) {
 
 func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "read")
+	logger.Info("get team by id")
 	teamID, err := extractTeamID(r)
 	if err != nil {
 		logger.Error(err)
@@ -72,6 +74,7 @@ func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
 
 func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "list")
+	logger.Info("retrieve team list")
 	list, err := t.store.ListTeams()
 	if err != nil {
 		logger.Error(err)
@@ -88,6 +91,7 @@ func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
 
 func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "update")
+	logger.Info("update team")
 	var team model.Team
 	err := json.NewDecoder(r.Body).Decode(&team)
 	if err != nil {
@@ -111,6 +115,7 @@ func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
 
 func (t *teamService) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "delete")
+	logger.Info("delete team")
 	teamID, err := extractTeamID(r)
 	if err != nil {
 		logger.Error(err)

@@ -25,6 +25,7 @@ type vaccationRequest struct {
 
 func (v *vaccationRequest) Create(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "create")
+	logger.Info("create new vaccation-request")
 	var vr model.VaccationRequest
 	err := json.NewDecoder(r.Body).Decode(&vr)
 	if err != nil {
@@ -50,6 +51,7 @@ func (v *vaccationRequest) Create(w http.ResponseWriter, r *http.Request) {
 
 func (v *vaccationRequest) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "read")
+	logger.Info("get vaccation-request by id")
 	vrID, err := extractVaccationRequestID(r)
 	if err != nil {
 		logger.Error(err)
@@ -89,6 +91,7 @@ func (v *vaccationRequest) List(w http.ResponseWriter, r *http.Request) {
 
 func (v *vaccationRequest) Update(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "update")
+	logger.Info("update vaccation-request")
 	var vr model.VaccationRequest
 	err := json.NewDecoder(r.Body).Decode(&vr)
 	if err != nil {
@@ -113,6 +116,7 @@ func (v *vaccationRequest) Update(w http.ResponseWriter, r *http.Request) {
 
 func (v *vaccationRequest) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "delete")
+	logger.Info("delete vaccation-request")
 	vrID, err := extractVaccationRequestID(r)
 	if err != nil {
 		logger.Error(err)
