@@ -61,8 +61,8 @@ func (i *inmemoryDB) UpdateUser(user *model.User) (*model.User, error) {
 			if user.Email != "" {
 				i.userStore[x].Email = user.Email
 			}
-			i.userStore[x].First_name = user.First_name
-			i.userStore[x].Last_name = user.Last_name
+			i.userStore[x].FirstName = user.FirstName
+			i.userStore[x].LastName = user.LastName
 			i.userStore[x].UpdatedAt = time.Now()
 			i.logger.Info("update user with id: ", user.ID)
 			return i.userStore[x], nil
