@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -14,6 +15,9 @@ import (
 	vaccationressources "github.com/MninaTB/vacadm/api/v1/vaccation_ressource"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/database/inmemory"
+	"github.com/MninaTB/vacadm/pkg/jwt"
+	"github.com/MninaTB/vacadm/pkg/middleware"
+	"github.com/MninaTB/vacadm/pkg/model"
 )
 
 func main() {
@@ -57,6 +61,27 @@ func main() {
 	router.Path("/vaccation-ressource").Methods(http.MethodGet).HandlerFunc(vacResSvc.List)
 	router.Path("/vaccation-ressource").Methods(http.MethodPatch).HandlerFunc(vacResSvc.Update)
 	router.Path("/vaccation-ressource/{vaccation-ressourceID}").Methods(http.MethodDelete).HandlerFunc(vacResSvc.Delete)
+
+	jwtKey := []byte("my-secret")
+	t := jwt.NewTokenizer(jwtKey, 365*24*time.Hour)
+	router.Use(middleware.Logging())
+	router.Use(middleware.Auth(t))
+	u := model.User{
+		FirstName: "nina",
+		LastName:  "olear",
+		Email:     "admin@inform.de",
+	}
+
+	newUser, err := db.CreateUser(&u)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+	token, err := t.Generate(newUser)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	logger.Info("admin token is: ", token)
 
 	const addr = ":8080"
 	log.Println("Starte Server auf Port", addr)
