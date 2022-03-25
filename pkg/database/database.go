@@ -14,13 +14,12 @@ type Database interface {
 	CreateTeam(*model.Team) (*model.Team, error)
 	GetTeamByID(string) (*model.Team, error)
 	ListTeams() ([]*model.Team, error)
+	ListTeamUsers(string) ([]*model.User, error)
 	UpdateTeam(*model.Team) (*model.Team, error)
 	DeleteTeam(string) error
 
-	CreateVaccation(*model.Vaccation) (*model.Vaccation, error)
 	GetVaccationByID(string) (*model.Vaccation, error)
 	ListVaccations() ([]*model.Vaccation, error)
-	UpdateVaccation(*model.Vaccation) (*model.Vaccation, error)
 	DeleteVaccation(string) error
 
 	CreateVaccationRequest(*model.VaccationRequest) (*model.VaccationRequest, error)

@@ -30,7 +30,8 @@ type inmemoryDB struct {
 }
 
 func (i *inmemoryDB) CreateUser(user *model.User) (*model.User, error) {
-	user.CreatedAt = time.Now()
+	createdAt := time.Now()
+	user.CreatedAt = &createdAt
 	user.ID = uuid.NewString()
 	usrCopy := user.Copy()
 
@@ -56,6 +57,7 @@ func (i *inmemoryDB) ListUsers() ([]*model.User, error) {
 }
 
 func (i *inmemoryDB) UpdateUser(user *model.User) (*model.User, error) {
+	updatededAt := time.Now()
 	for x := 0; x < len(i.userStore); x++ {
 		if i.userStore[x].ID == user.ID {
 			if user.Email != "" {
@@ -63,7 +65,7 @@ func (i *inmemoryDB) UpdateUser(user *model.User) (*model.User, error) {
 			}
 			i.userStore[x].FirstName = user.FirstName
 			i.userStore[x].LastName = user.LastName
-			i.userStore[x].UpdatedAt = time.Now()
+			i.userStore[x].UpdatedAt = &updatededAt
 			i.logger.Info("update user with id: ", user.ID)
 			return i.userStore[x], nil
 		}
@@ -85,7 +87,8 @@ func (i *inmemoryDB) DeleteUser(id string) error {
 }
 
 func (i *inmemoryDB) CreateTeam(team *model.Team) (*model.Team, error) {
-	team.CreatedAt = time.Now()
+	createdAt := time.Now()
+	team.CreatedAt = &createdAt
 	team.ID = uuid.NewString()
 	teamCopy := team.Copy()
 
@@ -110,11 +113,26 @@ func (i *inmemoryDB) ListTeams() ([]*model.Team, error) {
 	return i.teamStore, nil
 }
 
+func (i *inmemoryDB) ListTeamUsers(teamID string) ([]*model.User, error) {
+	var users []*model.User
+	allUsers, err := i.ListUsers()
+	if err != nil {
+		return nil, err
+	}
+	for _, u := range allUsers {
+		if u.TeamID != nil && *u.TeamID == teamID {
+			users = append(users, u.Copy())
+		}
+	}
+	return users, nil
+}
+
 func (i *inmemoryDB) UpdateTeam(team *model.Team) (*model.Team, error) {
+	updatededAt := time.Now()
 	for x := 0; x < len(i.teamStore); x++ {
 		if i.teamStore[x].ID == team.ID {
 			i.teamStore[x].Name = team.Name
-			i.teamStore[x].UpdatedAt = time.Now()
+			i.teamStore[x].UpdatedAt = &updatededAt
 			i.logger.Info("update team with id: ", team.ID)
 			return i.teamStore[x], nil
 		}
@@ -135,16 +153,6 @@ func (i *inmemoryDB) DeleteTeam(id string) error {
 	return errors.New("team didn't exist")
 }
 
-func (i *inmemoryDB) CreateVaccation(vaccation *model.Vaccation) (*model.Vaccation, error) {
-	vaccation.CreatedAt = time.Now()
-	vaccation.ID = uuid.NewString()
-	vaccationCopy := vaccation.Copy()
-
-	i.logger.Info("create vaccation with id: ", vaccation.ID)
-	i.vaccationStore = append(i.vaccationStore, vaccationCopy)
-	return vaccation, nil
-}
-
 func (i *inmemoryDB) GetVaccationByID(id string) (*model.Vaccation, error) {
 	for _, s := range i.vaccationStore {
 		if s.ID == id {
@@ -161,11 +169,6 @@ func (i *inmemoryDB) ListVaccations() ([]*model.Vaccation, error) {
 	return i.vaccationStore, nil
 }
 
-func (i *inmemoryDB) UpdateVaccation(vaccation *model.Vaccation) (*model.Vaccation, error) {
-	i.logger.Error("update failed: no update on vaccation possible")
-	return nil, errors.New("update failed: no update on vaccation possible")
-}
-
 func (i *inmemoryDB) DeleteVaccation(id string) error {
 	for x, vaccation := range i.vaccationStore {
 		if vaccation.ID == id {
@@ -178,14 +181,15 @@ func (i *inmemoryDB) DeleteVaccation(id string) error {
 	return errors.New("vaccation didn't exist")
 }
 
-func (i *inmemoryDB) CreateVaccationRequest(vacReq *model.VaccationRequest) (*model.VaccationRequest, error) {
-	vacReq.CreatedAt = time.Now()
-	vacReq.ID = uuid.NewString()
-	vacReqCopy := vacReq.Copy()
+func (i *inmemoryDB) CreateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
+	createdAt := time.Now()
+	v.CreatedAt = &createdAt
+	v.ID = uuid.NewString()
+	vCopy := v.Copy()
 
-	i.logger.Info("create vaccation-request with id: ", vacReq.ID)
-	i.vaccationRequestStore = append(i.vaccationRequestStore, vacReqCopy)
-	return vacReq, nil
+	i.logger.Info("create vaccation-request with id: ", v.ID)
+	i.vaccationRequestStore = append(i.vaccationRequestStore, vCopy)
+	return v, nil
 }
 
 func (i *inmemoryDB) GetVaccationRequestByID(id string) (*model.VaccationRequest, error) {
@@ -204,7 +208,7 @@ func (i *inmemoryDB) ListVaccationRequests() ([]*model.VaccationRequest, error) 
 	return i.vaccationRequestStore, nil
 }
 
-func (i *inmemoryDB) UpdateVaccationRequest(vaccationRequest *model.VaccationRequest) (*model.VaccationRequest, error) {
+func (i *inmemoryDB) UpdateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
 	i.logger.Error("update failed: no update on vaccation-request possible")
 	return nil, errors.New("update failed: no update on vaccation-request possible")
 }
@@ -221,14 +225,15 @@ func (i *inmemoryDB) DeleteVaccationRequest(id string) error {
 	return errors.New("vaccation-request didn't exist")
 }
 
-func (i *inmemoryDB) CreateVaccationRessource(vacRes *model.VaccationRessource) (*model.VaccationRessource, error) {
-	vacRes.CreatedAt = time.Now()
-	vacRes.ID = uuid.NewString()
-	vacResCopy := vacRes.Copy()
+func (i *inmemoryDB) CreateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
+	createdAt := time.Now()
+	v.CreatedAt = &createdAt
+	v.ID = uuid.NewString()
+	vCopy := v.Copy()
 
-	i.logger.Info("create vaccation-ressource with id: ", vacRes.ID)
-	i.vaccationRessourceStore = append(i.vaccationRessourceStore, vacResCopy)
-	return vacRes, nil
+	i.logger.Info("create vaccation-ressource with id: ", v.ID)
+	i.vaccationRessourceStore = append(i.vaccationRessourceStore, vCopy)
+	return v, nil
 }
 
 func (i *inmemoryDB) GetVaccationRessourceByID(id string) (*model.VaccationRessource, error) {
@@ -247,7 +252,7 @@ func (i *inmemoryDB) ListVaccationRessource() ([]*model.VaccationRessource, erro
 	return i.vaccationRessourceStore, nil
 }
 
-func (i *inmemoryDB) UpdateVaccationRessource(vaccationRessources *model.VaccationRessource) (*model.VaccationRessource, error) {
+func (i *inmemoryDB) UpdateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
 	i.logger.Error("update failed: no update on vaccation-ressource possible")
 	return nil, errors.New("update failed: no update on vaccation-ressource possible")
 }
