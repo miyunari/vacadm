@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/MninaTB/vacadm/pkg/database"
-	"github.com/MninaTB/vacadm/pkg/model"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -21,32 +20,6 @@ func NewVaccation(store database.Database, logger logrus.FieldLogger) *vaccation
 type vaccation struct {
 	store  database.Database
 	logger logrus.FieldLogger
-}
-
-func (v *vaccation) Create(w http.ResponseWriter, r *http.Request) {
-	logger := v.logger.WithField("component", "create")
-	logger.Info("create new vaccation")
-	var vac model.Vaccation
-	err := json.NewDecoder(r.Body).Decode(&vac)
-	if err != nil {
-		logger.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	vaccation, err := v.store.CreateVaccation(&vac)
-	if err != nil {
-		logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode(&vaccation)
-	if err != nil {
-		logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	v.logger.Info("created vaccation with id: ", vaccation.ID)
-	w.WriteHeader(http.StatusCreated)
 }
 
 func (v *vaccation) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -87,11 +60,6 @@ func (v *vaccation) List(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	v.logger.Info("get list of vaccations")
-}
-
-func (v *vaccation) Update(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-	v.logger.Warn("update is not implemented")
 }
 
 func (v *vaccation) Delete(w http.ResponseWriter, r *http.Request) {

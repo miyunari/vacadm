@@ -89,6 +89,29 @@ func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
 	t.logger.Info("get list of teams")
 }
 
+func (t *teamService) ListTeamUsers(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("component", "list-users")
+	logger.Info("retrieve list users from team")
+	teamID, err := extractTeamID(r)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	teamUser, err := t.store.ListTeamUsers(teamID)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(teamUser)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
 func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "update")
 	logger.Info("update team")
