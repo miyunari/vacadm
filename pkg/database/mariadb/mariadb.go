@@ -3,6 +3,8 @@ package mariadb
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -24,24 +26,22 @@ const (
 	userSelectByID = basicUserSelect + `
 	  	WHERE id = ?
 	`
-	/*
-		userCreate = `
+
+	userCreate = `
 		 	INSERT INTO user (
-			  	id,
-				parent_id,
-				firstname,
-				lastname,
-			  	email,
+				id, parent_id,
+				team_id, email,
+				firstname, lastname,
 			  	created_at, updated_at
 			)
 		  VALUES (
+			    UUID(), ?,
 			 	?, ?,
-			  	?, ?,
-			  	?, ?,
-				?
-		  )
+				?, ?, 
+				NOW(), NOW()
+		  ) RETURNING id, created_at
 		`
-	*/
+
 	/*
 		userUpdate = `
 		  	UPDATE user
@@ -148,15 +148,27 @@ type MariaDB struct {
 	logger logrus.FieldLogger
 }
 
-/*
 func (m *MariaDB) CreateUser(u *model.User) (*model.User, error) {
-	u.ID = uuid.NewString()
-	_, err := m.db.ExecContext(context.Background(), userCreate, u.ID, u.FirstName, u.LastName, u.Email, u.CreatedAt)
+	fmt.Println(*u.TeamID)
+	row, err := m.db.QueryContext(context.Background(), userCreate, u.ParentID, u.TeamID, u.Email, u.FirstName, u.LastName)
 	if err != nil {
 		return nil, err
 	}
-	return m.GetUserByID(u.ID)
-}*/
+	err = row.Err()
+	if err != nil {
+		return nil, err
+	}
+	var id string
+	var createdAt time.Time
+	row.Next()
+	err = row.Scan(&id, &createdAt)
+	if err != nil {
+		return nil, err
+	}
+	u.ID = id
+	u.CreatedAt = &createdAt
+	return u, nil
+}
 
 func (m *MariaDB) GetUserByID(uuid string) (*model.User, error) {
 	row := m.db.QueryRowContext(context.Background(), userSelectByID, uuid)
