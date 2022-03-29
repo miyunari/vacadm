@@ -24,7 +24,7 @@ CREATE TABLE user (
 CREATE TABLE vaccation (
     id UUID NOT NULL,
     user_id UUID NOT NULL,
-    approved_by UUID,
+    approved_id UUID,
     `from` DATE NOT NULL,
     `to` DATE NOT NULL,
     created_at DATE NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE vaccation (
     PRIMARY KEY(id),
     FOREIGN KEY(user_id) REFERENCES user(id),
     FOREIGN KEY(approved_id) REFERENCES user(id)
-)
+);
 
 CREATE TABLE vaccation_request (
     id UUID NOT NULL,
@@ -43,8 +43,8 @@ CREATE TABLE vaccation_request (
     deleted_at DATE,
     updated_at DATE,
     PRIMARY KEY(id),
-    FOREIGN KEY(user_id) REFERENCES user(id),
-)
+    FOREIGN KEY(user_id) REFERENCES user(id)
+);
 
 CREATE TABLE vaccation_ressource (
     id UUID NOT NULL,
@@ -56,5 +56,5 @@ CREATE TABLE vaccation_ressource (
     deleted_at DATE,
     updated_at DATE,
     PRIMARY KEY(id),
-    FOREIGN KEY(user_id) REFERENCES user(id),
-)
+    FOREIGN KEY(user_id) REFERENCES user(id)
+);

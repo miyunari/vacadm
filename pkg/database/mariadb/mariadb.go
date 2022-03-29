@@ -13,8 +13,8 @@ import (
 const (
 	basicUserSelect = `
 	  	SELECT
-			uuid,
-		  	parent_uuid,
+			id,
+		  	parent_id,
 		  	created_at, updated_at,
 		  	firstname, lastname,
 		  	email
@@ -22,7 +22,7 @@ const (
 	`
 
 	userSelectByID = basicUserSelect + `
-	  	WHERE uuid = :uuid
+	  	WHERE id = ?
 	`
 
 	userCreate = `
@@ -49,12 +49,12 @@ const (
 			firstname :firstname, lastname :lastname, 
 			email :email
 		)
-		WHERE uuid = :uuid
+		WHERE uuid = ?
 	`
 
 	userDelete = `
 		DELETE FROM user
-		WHERE uuid = :uuid
+		WHERE uuid = ?
 	`
 )
 
@@ -86,11 +86,24 @@ func (m *MariaDB) GetUserByID(uuid string) (*model.User, error) {
 		return nil, err
 	}
 	u := &model.User{}
-	row.Scan(u.ID, u.ParentID, u.CreatedAt, u.UpdatedAt, u.FirstName, u.LastName, u.Email)
+	var parentID sql.NullString
+	var createdAt, updatedAt sql.NullTime
+	err = row.Scan(&u.ID, &parentID, &createdAt, &updatedAt, &u.FirstName, &u.LastName, &u.Email)
+	if err != nil {
+		return nil, err
+	}
+	if parentID.Valid {
+		u.ParentID = &parentID.String
+	}
+	if createdAt.Valid {
+		u.CreatedAt = &createdAt.Time
+	}
+	if updatedAt.Valid {
+		u.UpdatedAt = &updatedAt.Time
+	}
 	return u, nil
 }
 
-// ?
 func (m *MariaDB) ListUsers() (*model.User, error) {
 	row := m.db.QueryRowContext(context.Background(), userSelectByID)
 	err := row.Err()
@@ -102,7 +115,6 @@ func (m *MariaDB) ListUsers() (*model.User, error) {
 	return u, nil
 }
 
-// ?
 func (m *MariaDB) UpdateUser(u *model.User) (*model.User, error) {
 	row := m.db.QueryRowContext(context.Background(), userUpdate)
 	err := row.Err()
@@ -114,7 +126,6 @@ func (m *MariaDB) UpdateUser(u *model.User) (*model.User, error) {
 	return user, nil
 }
 
-// ?
 func (m *MariaDB) DeleteUser(uuid string) error {
 	row := m.db.QueryRowContext(context.Background(), userDelete, uuid)
 	err := row.Err()
