@@ -28,33 +28,34 @@ const (
 	`
 
 	userCreate = `
-		 	INSERT INTO user (
-				id, parent_id,
-				team_id, email,
-				firstname, lastname,
-			  	created_at, updated_at
-			)
-		  VALUES (
-			    UUID(), ?,
-			 	?, ?,
-				?, ?, 
-				NOW(), NOW()
-		  ) RETURNING id, created_at
-		`
+		INSERT INTO user (
+			id, parent_id,
+			team_id, email,
+			firstname, lastname,
+		  	created_at, updated_at
+		)
+	  VALUES (
+		    UUID(), ?,
+		 	?, ?,
+			?, ?, 
+			NOW(), NOW()
+	  ) RETURNING id, created_at
+	`
 
-	/*
-		userUpdate = `
-		  	UPDATE user
-			SET (
-				id ?, parent_id ?,
-				firstname ?, lastname ?,
-				email ?
-			)
-			WHERE uuid = ?
-		`
-	*/
+	userUpdate = `
+	  	UPDATE user
+		SET 
+			parent_id = ?, team_id = ?,
+			firstname = ?, lastname = ?,
+			email = ?, updated_at = NOW()
+		WHERE id = ?
+	`
+
 	userDelete = `
-		DELETE FROM user
+		UPDATE user
+		SET 
+			updated_at = NOW(), 
+			deleted_at = Now()
 		WHERE id = ?
 	`
 
@@ -229,31 +230,35 @@ func (m *MariaDB) ListUsers() ([]*model.User, error) {
 	return allusr, nil
 }
 
-/*
 func (m *MariaDB) UpdateUser(u *model.User) (*model.User, error) {
-	row := m.db.QueryRowContext(context.Background(), userUpdate)
-	err := row.Err()
+	ctx := context.Background()
+	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
-	user := &model.User{}
-	var parentID sql.NullString
-	var createdAt, updatedAt sql.NullTime
-	err = row.Scan(&user.ID, &parentID, &createdAt, &updatedAt, &user.FirstName, &user.LastName, &user.Email)
+	_, err = tx.ExecContext(ctx, userUpdate, u.ParentID, u.TeamID, u.FirstName, u.LastName, u.Email, u.ID)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	row := tx.QueryRowContext(ctx, "SELECT updated_at WHERE id = ?", u.ID)
+	var updatedAt time.Time
+	err = row.Scan(&updatedAt)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
-	if parentID.Valid {
-		user.ParentID = &parentID.String
-	}
-	if createdAt.Valid {
-		user.CreatedAt = &createdAt.Time
-	}
-	if updatedAt.Valid {
-		user.UpdatedAt = &updatedAt.Time
-	}
-	return user, nil
-}*/
+	u.UpdatedAt = &updatedAt
+	return u, nil
+}
 
 func (m *MariaDB) DeleteUser(uuid string) error {
 	row := m.db.QueryRowContext(context.Background(), userDelete, uuid)
@@ -261,7 +266,7 @@ func (m *MariaDB) DeleteUser(uuid string) error {
 	if err != nil {
 		return err
 	}
-	return err
+	return nil
 }
 
 /*
