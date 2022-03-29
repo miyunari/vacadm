@@ -8,13 +8,13 @@ CREATE TABLE team (
 );
 
 CREATE TABLE user (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT UUID(),
     parent_id UUID,
-    team_id UUID NOT NULL,
+    team_id UUID,
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    created_at DATE NOT NULL,
+    created_at DATE NOT NULL DEFAULT time(),
     deleted_at DATE,
     updated_at DATE,
     PRIMARY KEY(id),
