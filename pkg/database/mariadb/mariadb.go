@@ -3,7 +3,6 @@ package mariadb
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -12,6 +11,21 @@ import (
 )
 
 const (
+	userCreate = `
+		INSERT INTO user (
+			id, parent_id,
+			team_id, email,
+			firstname, lastname,
+			created_at, updated_at
+		)
+  		VALUES (
+			UUID(), ?,
+			?, ?,
+			?, ?, 
+			NOW(), NOW()
+  		) RETURNING id, created_at
+	`
+
 	basicUserSelect = `
 	  	SELECT
 			id,
@@ -25,21 +39,6 @@ const (
 
 	userSelectByID = basicUserSelect + `
 	  	WHERE id = ?
-	`
-
-	userCreate = `
-		INSERT INTO user (
-			id, parent_id,
-			team_id, email,
-			firstname, lastname,
-		  	created_at, updated_at
-		)
-	  VALUES (
-		    UUID(), ?,
-		 	?, ?,
-			?, ?, 
-			NOW(), NOW()
-	  ) RETURNING id, created_at
 	`
 
 	userUpdate = `
@@ -59,6 +58,17 @@ const (
 		WHERE id = ?
 	`
 
+	teamCreate = `
+		INSERT INTO team (
+			id, name,
+			created_at, updated_at
+		)
+	  	VALUES (
+			UUID(), ?,
+			NOW(), NOW()
+	  	)RETURNING id, created_at
+	`
+
 	basicTeamSelect = `
 	  	SELECT
 			id,
@@ -75,8 +85,19 @@ const (
 		WHERE team_id = ?
 	`
 
+	teamUpdate = `
+		UPDATE team
+  		SET 
+	  		name = ?,
+	  		updated_at = NOW()
+  		WHERE id = ?
+	`
+
 	teamDelete = `
-		DELETE FROM team
+		UPDATE team
+		SET 
+			updated_at = NOW(), 
+			deleted_at = Now()
 		WHERE id = ?
 	`
 
@@ -95,8 +116,23 @@ const (
 	`
 
 	vaccationDelete = `
-		DELETE FROM vaccation
+		UPDATE vaccation
+		SET 
+			deleted_at = Now()
 		WHERE id = ?
+	`
+
+	vaccationRequestCreate = `
+		INSERT INTO user (
+			id, user_id,
+			from, to,
+		  	created_at, updated_at
+		)
+  		VALUES (
+			UUID(), ?
+			NOW(), NOW()
+			NOW(), NOW()
+  		) RETURNING id, created_at
 	`
 
 	basicVaccationRequestSelect = `
@@ -112,9 +148,34 @@ const (
 	  	WHERE id = ?
 	`
 
+	vaccationRequestUpdate = `
+		UPDATE vaccation_request
+  		SET 
+			user_id = ?,
+	  		from = ?, to = ?,
+	  		updated_at = NOW()
+  		WHERE id = ?
+	`
+
 	vaccationRequestDelete = `
-		DELETE FROM vaccation_request
+		UPDATE vaccation_request
+		SET 
+			updated_at = NOW(), 
+			deleted_at = Now()
 		WHERE id = ?
+	`
+
+	vaccationRessourceCreate = `
+		INSERT INTO user (
+			id, 
+			user_id, yearly_days,
+			created_at, updated_at
+		)
+	  	VALUES (
+			UUID(),
+			?, ?
+			NOW(), NOW()
+  		) RETURNING id, created_at
 	`
 
 	basicVaccationRessourceSelect = `
@@ -131,9 +192,22 @@ const (
 		WHERE id = ?
 	`
 
+	vaccationRessourceUpdate = `
+		UPDATE vaccation_ressource
+	  	SET 
+			user_id = ?,
+		  	yearly_days = ?,
+			from = ?, to = ?,
+		  	updated_at = NOW()
+	  	WHERE id = ?
+	`
+
 	vaccationRessourceDelete = `
-  		DELETE FROM vaccation_ressource
-  		WHERE id = ?
+		UPDATE vaccationRessource
+		SET 
+			updated_at = NOW(), 
+			deleted_at = Now()
+		WHERE id = ?
 	`
 )
 
@@ -150,7 +224,6 @@ type MariaDB struct {
 }
 
 func (m *MariaDB) CreateUser(u *model.User) (*model.User, error) {
-	fmt.Println(*u.TeamID)
 	row, err := m.db.QueryContext(context.Background(), userCreate, u.ParentID, u.TeamID, u.Email, u.FirstName, u.LastName)
 	if err != nil {
 		return nil, err
@@ -269,10 +342,26 @@ func (m *MariaDB) DeleteUser(uuid string) error {
 	return nil
 }
 
-/*
 func (m *MariaDB) CreateTeam(t *model.Team) (*model.Team, error) {
-
-}*/
+	row, err := m.db.QueryContext(context.Background(), teamCreate, t.Name)
+	if err != nil {
+		return nil, err
+	}
+	err = row.Err()
+	if err != nil {
+		return nil, err
+	}
+	var id string
+	var createdAt time.Time
+	row.Next()
+	err = row.Scan(&id, &createdAt)
+	if err != nil {
+		return nil, err
+	}
+	t.ID = id
+	t.CreatedAt = &createdAt
+	return t, nil
+}
 
 func (m *MariaDB) GetTeamByID(uuid string) (*model.Team, error) {
 	row := m.db.QueryRowContext(context.Background(), teamSelectByID, uuid)
@@ -350,10 +439,35 @@ func (m *MariaDB) ListTeamUsers(uuid string) ([]*model.User, error) {
 	return teamUser, nil
 }
 
-/*
 func (m *MariaDB) UpdateTeam(t *model.Team) (*model.Team, error) {
-
-}*/
+	ctx := context.Background()
+	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.ExecContext(ctx, teamUpdate, t.Name, t.ID)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	row := tx.QueryRowContext(ctx, "SELECT updated_at WHERE id = ?", t.ID)
+	var updatedAt time.Time
+	err = row.Scan(&updatedAt)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	t.UpdatedAt = &updatedAt
+	return t, nil
+}
 
 func (m *MariaDB) DeleteTeam(uuid string) error {
 	row := m.db.QueryRowContext(context.Background(), teamDelete, uuid)
@@ -440,10 +554,28 @@ func (m *MariaDB) DeleteVaccation(uuid string) error {
 	return err
 }
 
-/*
-func (m *MariaDB) CreateVaccationRequest(*model.VaccationRequest) (*model.VaccationRequest, error) {
-
-}*/
+func (m *MariaDB) CreateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
+	row, err := m.db.QueryContext(context.Background(), vaccationRequestCreate, v.UserID, v.From, v.To)
+	if err != nil {
+		return nil, err
+	}
+	err = row.Err()
+	if err != nil {
+		return nil, err
+	}
+	var id string
+	var createdAt, from, to time.Time
+	row.Next()
+	err = row.Scan(&id, &createdAt, &from, &to)
+	if err != nil {
+		return nil, err
+	}
+	v.ID = id
+	v.CreatedAt = &createdAt
+	v.From = from
+	v.To = to
+	return v, nil
+}
 
 func (m *MariaDB) GetVaccationRequestByID(uuid string) (*model.VaccationRequest, error) {
 	row := m.db.QueryRowContext(context.Background(), vaccationRequestSelectByID, uuid)
@@ -507,10 +639,35 @@ func (m *MariaDB) ListVaccationRequests() ([]*model.VaccationRequest, error) {
 	return allVaccationRequests, nil
 }
 
-/*
 func (m *MariaDB) UpdateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
-
-}*/
+	ctx := context.Background()
+	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.ExecContext(ctx, vaccationRequestUpdate, v.UserID, v.From, v.To, v.ID)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	row := tx.QueryRowContext(ctx, "SELECT updated_at WHERE id = ?", v.ID)
+	var updatedAt time.Time
+	err = row.Scan(&updatedAt)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	v.UpdatedAt = &updatedAt
+	return v, nil
+}
 
 func (m *MariaDB) DeleteVaccationRequest(uuid string) error {
 	row := m.db.QueryRowContext(context.Background(), vaccationRequestDelete, uuid)
@@ -521,10 +678,26 @@ func (m *MariaDB) DeleteVaccationRequest(uuid string) error {
 	return err
 }
 
-/*
 func (m *MariaDB) CreateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
-
-}*/
+	row, err := m.db.QueryContext(context.Background(), vaccationRessourceCreate, v.UserID, v.YearlyDays)
+	if err != nil {
+		return nil, err
+	}
+	err = row.Err()
+	if err != nil {
+		return nil, err
+	}
+	var id string
+	var createdAt time.Time
+	row.Next()
+	err = row.Scan(&id, &createdAt)
+	if err != nil {
+		return nil, err
+	}
+	v.ID = id
+	v.CreatedAt = &createdAt
+	return v, nil
+}
 
 func (m *MariaDB) GetVaccationRessourceByID(uuid string) (*model.VaccationRessource, error) {
 	row := m.db.QueryRowContext(context.Background(), vaccationRessourceSelectByID, uuid)
@@ -588,10 +761,35 @@ func (m *MariaDB) ListVaccationRessources() ([]*model.VaccationRessource, error)
 	return allVaccationRessources, nil
 }
 
-/*
 func (m *MariaDB) UpdateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
-
-}*/
+	ctx := context.Background()
+	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.ExecContext(ctx, vaccationRessourceUpdate, v.UserID, v.YearlyDays, v.From, v.To, v.ID)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	row := tx.QueryRowContext(ctx, "SELECT updated_at WHERE id = ?", v.ID)
+	var updatedAt time.Time
+	err = row.Scan(&updatedAt)
+	if err != nil {
+		if err := tx.Rollback(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	v.UpdatedAt = &updatedAt
+	return v, nil
+}
 
 func (m *MariaDB) DeleteVaccationRessource(uuid string) error {
 	row := m.db.QueryRowContext(context.Background(), vaccationRessourceDelete, uuid)
