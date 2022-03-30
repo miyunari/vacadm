@@ -209,7 +209,7 @@ func (i *inmemoryDB) ListVaccationRequests(_ context.Context) ([]*model.Vaccatio
 	return i.vaccationRequestStore, nil
 }
 
-func (i *inmemoryDB) UpdateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
+func (i *inmemoryDB) UpdateVaccationRequest(_ context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
 	i.logger.Error("update failed: no update on vaccation-request possible")
 	return nil, errors.New("update failed: no update on vaccation-request possible")
 }
