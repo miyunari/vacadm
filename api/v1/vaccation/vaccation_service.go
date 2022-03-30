@@ -31,7 +31,7 @@ func (v *vaccation) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	vaccation, err := v.store.GetVaccationByID(vacID)
+	vaccation, err := v.store.GetVaccationByID(r.Context(), vacID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -48,7 +48,7 @@ func (v *vaccation) GetByID(w http.ResponseWriter, r *http.Request) {
 func (v *vaccation) List(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "list")
 	logger.Info("get vaccation list")
-	list, err := v.store.ListVaccations()
+	list, err := v.store.ListVaccations(r.Context())
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -71,7 +71,7 @@ func (v *vaccation) Delete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = v.store.DeleteVaccation(vacID)
+	err = v.store.DeleteVaccation(r.Context(), vacID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)

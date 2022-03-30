@@ -223,8 +223,8 @@ type MariaDB struct {
 	logger logrus.FieldLogger
 }
 
-func (m *MariaDB) CreateUser(u *model.User) (*model.User, error) {
-	row, err := m.db.QueryContext(context.Background(), userCreate, u.ParentID, u.TeamID, u.Email, u.FirstName, u.LastName)
+func (m *MariaDB) CreateUser(ctx context.Context, u *model.User) (*model.User, error) {
+	row, err := m.db.QueryContext(ctx, userCreate, u.ParentID, u.TeamID, u.Email, u.FirstName, u.LastName)
 	if err != nil {
 		return nil, err
 	}
@@ -244,8 +244,8 @@ func (m *MariaDB) CreateUser(u *model.User) (*model.User, error) {
 	return u, nil
 }
 
-func (m *MariaDB) GetUserByID(uuid string) (*model.User, error) {
-	row := m.db.QueryRowContext(context.Background(), userSelectByID, uuid)
+func (m *MariaDB) GetUserByID(ctx context.Context, uuid string) (*model.User, error) {
+	row := m.db.QueryRowContext(ctx, userSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
@@ -272,9 +272,9 @@ func (m *MariaDB) GetUserByID(uuid string) (*model.User, error) {
 	return u, nil
 }
 
-func (m *MariaDB) ListUsers() ([]*model.User, error) {
+func (m *MariaDB) ListUsers(ctx context.Context) ([]*model.User, error) {
 	allusr := make([]*model.User, 0)
-	rows, err := m.db.QueryContext(context.Background(), basicUserSelect)
+	rows, err := m.db.QueryContext(ctx, basicUserSelect)
 	if err != nil {
 		return nil, err
 	}
@@ -303,8 +303,7 @@ func (m *MariaDB) ListUsers() ([]*model.User, error) {
 	return allusr, nil
 }
 
-func (m *MariaDB) UpdateUser(u *model.User) (*model.User, error) {
-	ctx := context.Background()
+func (m *MariaDB) UpdateUser(ctx context.Context, u *model.User) (*model.User, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -333,8 +332,8 @@ func (m *MariaDB) UpdateUser(u *model.User) (*model.User, error) {
 	return u, nil
 }
 
-func (m *MariaDB) DeleteUser(uuid string) error {
-	row := m.db.QueryRowContext(context.Background(), userDelete, uuid)
+func (m *MariaDB) DeleteUser(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, userDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err
@@ -342,8 +341,8 @@ func (m *MariaDB) DeleteUser(uuid string) error {
 	return nil
 }
 
-func (m *MariaDB) CreateTeam(t *model.Team) (*model.Team, error) {
-	row, err := m.db.QueryContext(context.Background(), teamCreate, t.Name)
+func (m *MariaDB) CreateTeam(ctx context.Context, t *model.Team) (*model.Team, error) {
+	row, err := m.db.QueryContext(ctx, teamCreate, t.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -363,8 +362,8 @@ func (m *MariaDB) CreateTeam(t *model.Team) (*model.Team, error) {
 	return t, nil
 }
 
-func (m *MariaDB) GetTeamByID(uuid string) (*model.Team, error) {
-	row := m.db.QueryRowContext(context.Background(), teamSelectByID, uuid)
+func (m *MariaDB) GetTeamByID(ctx context.Context, uuid string) (*model.Team, error) {
+	row := m.db.QueryRowContext(ctx, teamSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
@@ -384,9 +383,9 @@ func (m *MariaDB) GetTeamByID(uuid string) (*model.Team, error) {
 	return t, nil
 }
 
-func (m *MariaDB) ListTeams() ([]*model.Team, error) {
+func (m *MariaDB) ListTeams(ctx context.Context) ([]*model.Team, error) {
 	allTeams := make([]*model.Team, 0)
-	rows, err := m.db.QueryContext(context.Background(), basicTeamSelect)
+	rows, err := m.db.QueryContext(ctx, basicTeamSelect)
 	if err != nil {
 		return nil, err
 	}
@@ -408,9 +407,9 @@ func (m *MariaDB) ListTeams() ([]*model.Team, error) {
 	return allTeams, nil
 }
 
-func (m *MariaDB) ListTeamUsers(uuid string) ([]*model.User, error) {
+func (m *MariaDB) ListTeamUsers(ctx context.Context, uuid string) ([]*model.User, error) {
 	teamUser := make([]*model.User, 0)
-	rows, err := m.db.QueryContext(context.Background(), teamUserSelectByID, uuid)
+	rows, err := m.db.QueryContext(ctx, teamUserSelectByID, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -439,8 +438,7 @@ func (m *MariaDB) ListTeamUsers(uuid string) ([]*model.User, error) {
 	return teamUser, nil
 }
 
-func (m *MariaDB) UpdateTeam(t *model.Team) (*model.Team, error) {
-	ctx := context.Background()
+func (m *MariaDB) UpdateTeam(ctx context.Context, t *model.Team) (*model.Team, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -469,8 +467,8 @@ func (m *MariaDB) UpdateTeam(t *model.Team) (*model.Team, error) {
 	return t, nil
 }
 
-func (m *MariaDB) DeleteTeam(uuid string) error {
-	row := m.db.QueryRowContext(context.Background(), teamDelete, uuid)
+func (m *MariaDB) DeleteTeam(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, teamDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err
@@ -478,8 +476,8 @@ func (m *MariaDB) DeleteTeam(uuid string) error {
 	return err
 }
 
-func (m *MariaDB) GetVaccationByID(uuid string) (*model.Vaccation, error) {
-	row := m.db.QueryRowContext(context.Background(), vaccationSelectByID, uuid)
+func (m *MariaDB) GetVaccationByID(ctx context.Context, uuid string) (*model.Vaccation, error) {
+	row := m.db.QueryRowContext(ctx, vaccationSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
@@ -510,9 +508,9 @@ func (m *MariaDB) GetVaccationByID(uuid string) (*model.Vaccation, error) {
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccations() ([]*model.Vaccation, error) {
+func (m *MariaDB) ListVaccations(ctx context.Context) ([]*model.Vaccation, error) {
 	allVaccations := make([]*model.Vaccation, 0)
-	rows, err := m.db.QueryContext(context.Background(), basicVaccationSelect)
+	rows, err := m.db.QueryContext(ctx, basicVaccationSelect)
 	if err != nil {
 		return nil, err
 	}
@@ -545,8 +543,8 @@ func (m *MariaDB) ListVaccations() ([]*model.Vaccation, error) {
 	return allVaccations, nil
 }
 
-func (m *MariaDB) DeleteVaccation(uuid string) error {
-	row := m.db.QueryRowContext(context.Background(), vaccationDelete, uuid)
+func (m *MariaDB) DeleteVaccation(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vaccationDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err
@@ -554,8 +552,8 @@ func (m *MariaDB) DeleteVaccation(uuid string) error {
 	return err
 }
 
-func (m *MariaDB) CreateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
-	row, err := m.db.QueryContext(context.Background(), vaccationRequestCreate, v.UserID, v.From, v.To)
+func (m *MariaDB) CreateVaccationRequest(ctx context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
+	row, err := m.db.QueryContext(ctx, vaccationRequestCreate, v.UserID, v.From, v.To)
 	if err != nil {
 		return nil, err
 	}
@@ -577,8 +575,8 @@ func (m *MariaDB) CreateVaccationRequest(v *model.VaccationRequest) (*model.Vacc
 	return v, nil
 }
 
-func (m *MariaDB) GetVaccationRequestByID(uuid string) (*model.VaccationRequest, error) {
-	row := m.db.QueryRowContext(context.Background(), vaccationRequestSelectByID, uuid)
+func (m *MariaDB) GetVaccationRequestByID(ctx context.Context, uuid string) (*model.VaccationRequest, error) {
+	row := m.db.QueryRowContext(ctx, vaccationRequestSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
@@ -608,9 +606,9 @@ func (m *MariaDB) GetVaccationRequestByID(uuid string) (*model.VaccationRequest,
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccationRequests() ([]*model.VaccationRequest, error) {
+func (m *MariaDB) ListVaccationRequests(ctx context.Context) ([]*model.VaccationRequest, error) {
 	allVaccationRequests := make([]*model.VaccationRequest, 0)
-	rows, err := m.db.QueryContext(context.Background(), basicVaccationRequestSelect)
+	rows, err := m.db.QueryContext(ctx, basicVaccationRequestSelect)
 	if err != nil {
 		return nil, err
 	}
@@ -639,8 +637,7 @@ func (m *MariaDB) ListVaccationRequests() ([]*model.VaccationRequest, error) {
 	return allVaccationRequests, nil
 }
 
-func (m *MariaDB) UpdateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
-	ctx := context.Background()
+func (m *MariaDB) UpdateVaccationRequest(ctx context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -669,8 +666,8 @@ func (m *MariaDB) UpdateVaccationRequest(v *model.VaccationRequest) (*model.Vacc
 	return v, nil
 }
 
-func (m *MariaDB) DeleteVaccationRequest(uuid string) error {
-	row := m.db.QueryRowContext(context.Background(), vaccationRequestDelete, uuid)
+func (m *MariaDB) DeleteVaccationRequest(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vaccationRequestDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err
@@ -678,8 +675,8 @@ func (m *MariaDB) DeleteVaccationRequest(uuid string) error {
 	return err
 }
 
-func (m *MariaDB) CreateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
-	row, err := m.db.QueryContext(context.Background(), vaccationRessourceCreate, v.UserID, v.YearlyDays)
+func (m *MariaDB) CreateVaccationRessource(ctx context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
+	row, err := m.db.QueryContext(ctx, vaccationRessourceCreate, v.UserID, v.YearlyDays)
 	if err != nil {
 		return nil, err
 	}
@@ -699,8 +696,8 @@ func (m *MariaDB) CreateVaccationRessource(v *model.VaccationRessource) (*model.
 	return v, nil
 }
 
-func (m *MariaDB) GetVaccationRessourceByID(uuid string) (*model.VaccationRessource, error) {
-	row := m.db.QueryRowContext(context.Background(), vaccationRessourceSelectByID, uuid)
+func (m *MariaDB) GetVaccationRessourceByID(ctx context.Context, uuid string) (*model.VaccationRessource, error) {
+	row := m.db.QueryRowContext(ctx, vaccationRessourceSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
@@ -730,9 +727,9 @@ func (m *MariaDB) GetVaccationRessourceByID(uuid string) (*model.VaccationRessou
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccationRessources() ([]*model.VaccationRessource, error) {
+func (m *MariaDB) ListVaccationRessources(ctx context.Context) ([]*model.VaccationRessource, error) {
 	allVaccationRessources := make([]*model.VaccationRessource, 0)
-	rows, err := m.db.QueryContext(context.Background(), basicVaccationRessourceSelect)
+	rows, err := m.db.QueryContext(ctx, basicVaccationRessourceSelect)
 	if err != nil {
 		return nil, err
 	}
@@ -761,8 +758,7 @@ func (m *MariaDB) ListVaccationRessources() ([]*model.VaccationRessource, error)
 	return allVaccationRessources, nil
 }
 
-func (m *MariaDB) UpdateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
-	ctx := context.Background()
+func (m *MariaDB) UpdateVaccationRessource(ctx context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -791,8 +787,8 @@ func (m *MariaDB) UpdateVaccationRessource(v *model.VaccationRessource) (*model.
 	return v, nil
 }
 
-func (m *MariaDB) DeleteVaccationRessource(uuid string) error {
-	row := m.db.QueryRowContext(context.Background(), vaccationRessourceDelete, uuid)
+func (m *MariaDB) DeleteVaccationRessource(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vaccationRessourceDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err

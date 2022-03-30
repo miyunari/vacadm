@@ -1,36 +1,38 @@
 package database
 
 import (
+	"context"
+
 	"github.com/MninaTB/vacadm/pkg/model"
 )
 
 type Database interface {
-	CreateUser(*model.User) (*model.User, error)
-	GetUserByID(string) (*model.User, error)
-	ListUsers() ([]*model.User, error)
-	UpdateUser(*model.User) (*model.User, error)
-	DeleteUser(string) error
+	CreateUser(context.Context, *model.User) (*model.User, error)
+	GetUserByID(context.Context, string) (*model.User, error)
+	ListUsers(context.Context) ([]*model.User, error)
+	UpdateUser(context.Context, *model.User) (*model.User, error)
+	DeleteUser(context.Context, string) error
 
-	CreateTeam(*model.Team) (*model.Team, error)
-	GetTeamByID(string) (*model.Team, error)
-	ListTeams() ([]*model.Team, error)
-	ListTeamUsers(string) ([]*model.User, error)
-	UpdateTeam(*model.Team) (*model.Team, error)
-	DeleteTeam(string) error
+	CreateTeam(context.Context, *model.Team) (*model.Team, error)
+	GetTeamByID(context.Context, string) (*model.Team, error)
+	ListTeams(context.Context) ([]*model.Team, error)
+	ListTeamUsers(context.Context, string) ([]*model.User, error)
+	UpdateTeam(context.Context, *model.Team) (*model.Team, error)
+	DeleteTeam(context.Context, string) error
 
-	GetVaccationByID(string) (*model.Vaccation, error)
-	ListVaccations() ([]*model.Vaccation, error)
-	DeleteVaccation(string) error
+	GetVaccationByID(context.Context, string) (*model.Vaccation, error)
+	ListVaccations(context.Context) ([]*model.Vaccation, error)
+	DeleteVaccation(context.Context, string) error
 
-	CreateVaccationRequest(*model.VaccationRequest) (*model.VaccationRequest, error)
-	GetVaccationRequestByID(string) (*model.VaccationRequest, error)
-	ListVaccationRequests() ([]*model.VaccationRequest, error)
-	UpdateVaccationRequest(*model.VaccationRequest) (*model.VaccationRequest, error)
-	DeleteVaccationRequest(string) error
+	CreateVaccationRequest(context.Context, *model.VaccationRequest) (*model.VaccationRequest, error)
+	GetVaccationRequestByID(context.Context, string) (*model.VaccationRequest, error)
+	ListVaccationRequests(context.Context) ([]*model.VaccationRequest, error)
+	UpdateVaccationRequest(context.Context, *model.VaccationRequest) (*model.VaccationRequest, error)
+	DeleteVaccationRequest(context.Context, string) error
 
-	CreateVaccationRessource(*model.VaccationRessource) (*model.VaccationRessource, error)
-	GetVaccationRessourceByID(string) (*model.VaccationRessource, error)
-	ListVaccationRessource() ([]*model.VaccationRessource, error)
-	UpdateVaccationRessource(*model.VaccationRessource) (*model.VaccationRessource, error)
-	DeleteVaccationRessource(string) error
+	CreateVaccationRessource(context.Context, *model.VaccationRessource) (*model.VaccationRessource, error)
+	GetVaccationRessourceByID(context.Context, string) (*model.VaccationRessource, error)
+	ListVaccationRessource(context.Context) ([]*model.VaccationRessource, error)
+	UpdateVaccationRessource(context.Context, *model.VaccationRessource) (*model.VaccationRessource, error)
+	DeleteVaccationRessource(context.Context, string) error
 }

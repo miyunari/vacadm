@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -29,7 +30,7 @@ type inmemoryDB struct {
 	logger                  logrus.FieldLogger
 }
 
-func (i *inmemoryDB) CreateUser(user *model.User) (*model.User, error) {
+func (i *inmemoryDB) CreateUser(_ context.Context, user *model.User) (*model.User, error) {
 	createdAt := time.Now()
 	user.CreatedAt = &createdAt
 	user.ID = uuid.NewString()
@@ -40,7 +41,7 @@ func (i *inmemoryDB) CreateUser(user *model.User) (*model.User, error) {
 	return user, nil
 }
 
-func (i *inmemoryDB) GetUserByID(id string) (*model.User, error) {
+func (i *inmemoryDB) GetUserByID(_ context.Context, id string) (*model.User, error) {
 	for _, s := range i.userStore {
 		if s.ID == id {
 			i.logger.Info("get user with id: ", s.ID)
@@ -51,12 +52,12 @@ func (i *inmemoryDB) GetUserByID(id string) (*model.User, error) {
 	return nil, errors.New("no user found")
 }
 
-func (i *inmemoryDB) ListUsers() ([]*model.User, error) {
+func (i *inmemoryDB) ListUsers(_ context.Context) ([]*model.User, error) {
 	i.logger.Info("get list of users")
 	return i.userStore, nil
 }
 
-func (i *inmemoryDB) UpdateUser(user *model.User) (*model.User, error) {
+func (i *inmemoryDB) UpdateUser(_ context.Context, user *model.User) (*model.User, error) {
 	updatededAt := time.Now()
 	for x := 0; x < len(i.userStore); x++ {
 		if i.userStore[x].ID == user.ID {
@@ -74,7 +75,7 @@ func (i *inmemoryDB) UpdateUser(user *model.User) (*model.User, error) {
 	return nil, errors.New("update failed: no user found")
 }
 
-func (i *inmemoryDB) DeleteUser(id string) error {
+func (i *inmemoryDB) DeleteUser(_ context.Context, id string) error {
 	for x, user := range i.userStore {
 		if user.ID == id {
 			i.logger.Info("deleted user with id: ", id)
@@ -86,7 +87,7 @@ func (i *inmemoryDB) DeleteUser(id string) error {
 	return errors.New("user didn't exist")
 }
 
-func (i *inmemoryDB) CreateTeam(team *model.Team) (*model.Team, error) {
+func (i *inmemoryDB) CreateTeam(_ context.Context, team *model.Team) (*model.Team, error) {
 	createdAt := time.Now()
 	team.CreatedAt = &createdAt
 	team.ID = uuid.NewString()
@@ -97,7 +98,7 @@ func (i *inmemoryDB) CreateTeam(team *model.Team) (*model.Team, error) {
 	return team, nil
 }
 
-func (i *inmemoryDB) GetTeamByID(id string) (*model.Team, error) {
+func (i *inmemoryDB) GetTeamByID(_ context.Context, id string) (*model.Team, error) {
 	for _, s := range i.teamStore {
 		if s.ID == id {
 			i.logger.Info("get team with id: ", s.ID)
@@ -108,14 +109,14 @@ func (i *inmemoryDB) GetTeamByID(id string) (*model.Team, error) {
 	return nil, errors.New("no team found")
 }
 
-func (i *inmemoryDB) ListTeams() ([]*model.Team, error) {
+func (i *inmemoryDB) ListTeams(_ context.Context) ([]*model.Team, error) {
 	i.logger.Info("get list of teams")
 	return i.teamStore, nil
 }
 
-func (i *inmemoryDB) ListTeamUsers(teamID string) ([]*model.User, error) {
+func (i *inmemoryDB) ListTeamUsers(ctx context.Context, teamID string) ([]*model.User, error) {
 	var users []*model.User
-	allUsers, err := i.ListUsers()
+	allUsers, err := i.ListUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +128,7 @@ func (i *inmemoryDB) ListTeamUsers(teamID string) ([]*model.User, error) {
 	return users, nil
 }
 
-func (i *inmemoryDB) UpdateTeam(team *model.Team) (*model.Team, error) {
+func (i *inmemoryDB) UpdateTeam(_ context.Context, team *model.Team) (*model.Team, error) {
 	updatededAt := time.Now()
 	for x := 0; x < len(i.teamStore); x++ {
 		if i.teamStore[x].ID == team.ID {
@@ -141,7 +142,7 @@ func (i *inmemoryDB) UpdateTeam(team *model.Team) (*model.Team, error) {
 	return nil, errors.New("update failed: no team found")
 }
 
-func (i *inmemoryDB) DeleteTeam(id string) error {
+func (i *inmemoryDB) DeleteTeam(_ context.Context, id string) error {
 	for x, team := range i.teamStore {
 		if team.ID == id {
 			i.logger.Info("delete team with id: ", id)
@@ -153,7 +154,7 @@ func (i *inmemoryDB) DeleteTeam(id string) error {
 	return errors.New("team didn't exist")
 }
 
-func (i *inmemoryDB) GetVaccationByID(id string) (*model.Vaccation, error) {
+func (i *inmemoryDB) GetVaccationByID(_ context.Context, id string) (*model.Vaccation, error) {
 	for _, s := range i.vaccationStore {
 		if s.ID == id {
 			i.logger.Info("get vaccation with id: ", id)
@@ -164,12 +165,12 @@ func (i *inmemoryDB) GetVaccationByID(id string) (*model.Vaccation, error) {
 	return nil, errors.New("no vaccation found")
 }
 
-func (i *inmemoryDB) ListVaccations() ([]*model.Vaccation, error) {
+func (i *inmemoryDB) ListVaccations(_ context.Context) ([]*model.Vaccation, error) {
 	i.logger.Info("get list of vaccations")
 	return i.vaccationStore, nil
 }
 
-func (i *inmemoryDB) DeleteVaccation(id string) error {
+func (i *inmemoryDB) DeleteVaccation(_ context.Context, id string) error {
 	for x, vaccation := range i.vaccationStore {
 		if vaccation.ID == id {
 			i.logger.Info("delete vaccation with id: ", vaccation.ID)
@@ -181,7 +182,7 @@ func (i *inmemoryDB) DeleteVaccation(id string) error {
 	return errors.New("vaccation didn't exist")
 }
 
-func (i *inmemoryDB) CreateVaccationRequest(v *model.VaccationRequest) (*model.VaccationRequest, error) {
+func (i *inmemoryDB) CreateVaccationRequest(_ context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
@@ -192,7 +193,7 @@ func (i *inmemoryDB) CreateVaccationRequest(v *model.VaccationRequest) (*model.V
 	return v, nil
 }
 
-func (i *inmemoryDB) GetVaccationRequestByID(id string) (*model.VaccationRequest, error) {
+func (i *inmemoryDB) GetVaccationRequestByID(_ context.Context, id string) (*model.VaccationRequest, error) {
 	for _, s := range i.vaccationRequestStore {
 		if s.ID == id {
 			i.logger.Info("get vaccation-request with id: ", id)
@@ -203,7 +204,7 @@ func (i *inmemoryDB) GetVaccationRequestByID(id string) (*model.VaccationRequest
 	return nil, errors.New("no vaccation-request found")
 }
 
-func (i *inmemoryDB) ListVaccationRequests() ([]*model.VaccationRequest, error) {
+func (i *inmemoryDB) ListVaccationRequests(_ context.Context) ([]*model.VaccationRequest, error) {
 	i.logger.Info("get list of vaccation-requests")
 	return i.vaccationRequestStore, nil
 }
@@ -213,7 +214,7 @@ func (i *inmemoryDB) UpdateVaccationRequest(v *model.VaccationRequest) (*model.V
 	return nil, errors.New("update failed: no update on vaccation-request possible")
 }
 
-func (i *inmemoryDB) DeleteVaccationRequest(id string) error {
+func (i *inmemoryDB) DeleteVaccationRequest(_ context.Context, id string) error {
 	for x, vaccationRequest := range i.vaccationRequestStore {
 		if vaccationRequest.ID == id {
 			i.logger.Info("delete vaccation-request with id: ", vaccationRequest.ID)
@@ -225,7 +226,7 @@ func (i *inmemoryDB) DeleteVaccationRequest(id string) error {
 	return errors.New("vaccation-request didn't exist")
 }
 
-func (i *inmemoryDB) CreateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
+func (i *inmemoryDB) CreateVaccationRessource(_ context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
@@ -236,7 +237,7 @@ func (i *inmemoryDB) CreateVaccationRessource(v *model.VaccationRessource) (*mod
 	return v, nil
 }
 
-func (i *inmemoryDB) GetVaccationRessourceByID(id string) (*model.VaccationRessource, error) {
+func (i *inmemoryDB) GetVaccationRessourceByID(_ context.Context, id string) (*model.VaccationRessource, error) {
 	for _, s := range i.vaccationRessourceStore {
 		if s.ID == id {
 			i.logger.Info("get vaccation-ressource with id: ", id)
@@ -247,17 +248,17 @@ func (i *inmemoryDB) GetVaccationRessourceByID(id string) (*model.VaccationResso
 	return nil, errors.New("no vaccation-ressource found")
 }
 
-func (i *inmemoryDB) ListVaccationRessource() ([]*model.VaccationRessource, error) {
+func (i *inmemoryDB) ListVaccationRessource(_ context.Context) ([]*model.VaccationRessource, error) {
 	i.logger.Info("get list of vaccation-ressource")
 	return i.vaccationRessourceStore, nil
 }
 
-func (i *inmemoryDB) UpdateVaccationRessource(v *model.VaccationRessource) (*model.VaccationRessource, error) {
+func (i *inmemoryDB) UpdateVaccationRessource(_ context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
 	i.logger.Error("update failed: no update on vaccation-ressource possible")
 	return nil, errors.New("update failed: no update on vaccation-ressource possible")
 }
 
-func (i *inmemoryDB) DeleteVaccationRessource(id string) error {
+func (i *inmemoryDB) DeleteVaccationRessource(_ context.Context, id string) error {
 	for x, vaccationRessource := range i.vaccationRessourceStore {
 		if vaccationRessource.ID == id {
 			i.logger.Info("delete vaccation-ressource with id: ", vaccationRessource.ID)

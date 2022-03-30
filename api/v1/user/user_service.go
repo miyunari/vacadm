@@ -34,7 +34,7 @@ func (u *userService) Create(w http.ResponseWriter, r *http.Request) {
 		logger.Error(err)
 		return
 	}
-	user, err := u.store.CreateUser(&usr)
+	user, err := u.store.CreateUser(r.Context(), &usr)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -59,7 +59,7 @@ func (u *userService) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	usr, err := u.store.GetUserByID(userID)
+	usr, err := u.store.GetUserByID(r.Context(), userID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -76,7 +76,7 @@ func (u *userService) GetByID(w http.ResponseWriter, r *http.Request) {
 func (u *userService) List(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "list")
 	logger.Info("retrieve user list")
-	list, err := u.store.ListUsers()
+	list, err := u.store.ListUsers(r.Context())
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -100,7 +100,7 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, err := u.store.UpdateUser(&usr)
+	user, err := u.store.UpdateUser(r.Context(), &usr)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -123,7 +123,7 @@ func (u *userService) Delete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = u.store.DeleteUser(userID)
+	err = u.store.DeleteUser(r.Context(), userID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)

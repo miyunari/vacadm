@@ -33,7 +33,7 @@ func (t *teamService) Create(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	tm, err := t.store.CreateTeam(&team)
+	tm, err := t.store.CreateTeam(r.Context(), &team)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -58,7 +58,7 @@ func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	team, err := t.store.GetTeamByID(teamID)
+	team, err := t.store.GetTeamByID(r.Context(), teamID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -75,7 +75,7 @@ func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
 func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "list")
 	logger.Info("retrieve team list")
-	list, err := t.store.ListTeams()
+	list, err := t.store.ListTeams(r.Context())
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -98,7 +98,7 @@ func (t *teamService) ListTeamUsers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	teamUser, err := t.store.ListTeamUsers(teamID)
+	teamUser, err := t.store.ListTeamUsers(r.Context(), teamID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -122,7 +122,7 @@ func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	uTeam, err := t.store.UpdateTeam(&team)
+	uTeam, err := t.store.UpdateTeam(r.Context(), &team)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -145,7 +145,7 @@ func (t *teamService) Delete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = t.store.DeleteTeam(teamID)
+	err = t.store.DeleteTeam(r.Context(), teamID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -33,7 +33,7 @@ func (v *vaccationRequest) Create(w http.ResponseWriter, r *http.Request) {
 		logger.Error(err)
 		return
 	}
-	newVR, err := v.store.CreateVaccationRequest(&vr)
+	newVR, err := v.store.CreateVaccationRequest(r.Context(), &vr)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error(err)
@@ -58,7 +58,7 @@ func (v *vaccationRequest) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	vR, err := v.store.GetVaccationRequestByID(vrID)
+	vR, err := v.store.GetVaccationRequestByID(r.Context(), vrID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -75,7 +75,7 @@ func (v *vaccationRequest) GetByID(w http.ResponseWriter, r *http.Request) {
 func (v *vaccationRequest) List(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "list")
 	logger.Info("retrieve vaccation-request list")
-	list, err := v.store.ListVaccationRequests()
+	list, err := v.store.ListVaccationRequests(r.Context())
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -99,7 +99,7 @@ func (v *vaccationRequest) Update(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	newVR, err := v.store.UpdateVaccationRequest(&vr)
+	newVR, err := v.store.UpdateVaccationRequest(r.Context(), &vr)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -123,7 +123,7 @@ func (v *vaccationRequest) Delete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = v.store.DeleteVaccationRequest(vrID)
+	err = v.store.DeleteVaccationRequest(r.Context(), vrID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
