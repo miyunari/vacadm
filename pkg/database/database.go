@@ -3,10 +3,19 @@ package database
 import (
 	"context"
 
+	"github.com/MninaTB/vacadm/pkg/database/inmemory"
+	"github.com/MninaTB/vacadm/pkg/database/mariadb"
 	"github.com/MninaTB/vacadm/pkg/model"
 )
 
+var _ Database = (*inmemory.InmemoryDB)(nil)
+var _ Database = (*mariadb.MariaDB)(nil)
+
 type Database interface {
+	IsParentUser(ctx context.Context, userID, parentID string) (bool, error)
+	IsTeamMember(ctx context.Context, teamID, userID string) (bool, error)
+	IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error)
+
 	CreateUser(context.Context, *model.User) (*model.User, error)
 	GetUserByID(context.Context, string) (*model.User, error)
 	ListUsers(context.Context) ([]*model.User, error)

@@ -269,3 +269,15 @@ func (i *InmemoryDB) DeleteVaccationRessource(_ context.Context, id string) erro
 	i.logger.Error("vaccation-ressource didn't exist")
 	return errors.New("vaccation-ressource didn't exist")
 }
+
+func (i *InmemoryDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
+	return false, errors.New("not implemented")
+}
+
+func (i *InmemoryDB) IsTeamMember(ctx context.Context, teamID, userID string) (bool, error) {
+	return false, errors.New("not implemented")
+}
+
+func (i *InmemoryDB) IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error) {
+	return false, errors.New("not implemented")
+}

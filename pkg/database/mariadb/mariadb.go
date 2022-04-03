@@ -3,6 +3,7 @@ package mariadb
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -794,4 +795,16 @@ func (m *MariaDB) DeleteVaccationRessource(ctx context.Context, uuid string) err
 		return err
 	}
 	return err
+}
+
+func (m *MariaDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
+	return false, errors.New("not implemented")
+}
+
+func (m *MariaDB) IsTeamMember(ctx context.Context, teamID, userID string) (bool, error) {
+	return false, errors.New("not implemented")
+}
+
+func (m *MariaDB) IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error) {
+	return false, errors.New("not implemented")
 }
