@@ -271,13 +271,42 @@ func (i *InmemoryDB) DeleteVaccationRessource(_ context.Context, id string) erro
 }
 
 func (i *InmemoryDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
-	return false, errors.New("not implemented")
+	u, err := i.GetUserByID(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+	next := u
+	for next.ParentID != nil {
+		if *next.ParentID == parentID {
+			return true, nil
+		}
+		parent, err := i.GetUserByID(ctx, *next.ParentID)
+		if err != nil {
+			return false, nil
+		}
+		next = parent
+	}
+	return false, nil
 }
 
-func (i *InmemoryDB) IsTeamMember(ctx context.Context, teamID, userID string) (bool, error) {
-	return false, errors.New("not implemented")
+func (i *InmemoryDB) IsTeamMember(_ context.Context, teamID, userID string) (bool, error) {
+	for _, u := range i.userStore {
+		if u.ID == userID && u.TeamID == &teamID {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
-func (i *InmemoryDB) IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error) {
-	return false, errors.New("not implemented")
+func (i *InmemoryDB) IsTeamOwner(_ context.Context, teamID, userID string) (bool, error) {
+	i.logger.WithFields(logrus.Fields{
+		"teamID": teamID,
+		"userID": userID,
+	}).Info("check - is team owner")
+	for _, t := range i.teamStore {
+		if t.ID == teamID && t.OwnerID == userID {
+			return true, nil
+		}
+	}
+	return false, nil
 }
