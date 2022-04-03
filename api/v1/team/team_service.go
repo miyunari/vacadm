@@ -2,12 +2,11 @@ package team
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
+	"github.com/MninaTB/vacadm/api/v1/util"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/model"
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -52,7 +51,7 @@ func (t *teamService) Create(w http.ResponseWriter, r *http.Request) {
 func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "read")
 	logger.Info("get team by id")
-	teamID, err := extractTeamID(r)
+	teamID, err := util.TeamIDFromRequest(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -92,7 +91,7 @@ func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
 func (t *teamService) ListTeamUsers(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "list-users")
 	logger.Info("retrieve list users from team")
-	teamID, err := extractTeamID(r)
+	teamID, err := util.TeamIDFromRequest(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -139,7 +138,7 @@ func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
 func (t *teamService) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("component", "delete")
 	logger.Info("delete team")
-	teamID, err := extractTeamID(r)
+	teamID, err := util.TeamIDFromRequest(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -153,13 +152,4 @@ func (t *teamService) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	t.logger.Info("delete team with id: ", teamID)
 	w.WriteHeader(http.StatusAccepted)
-}
-
-func extractTeamID(r *http.Request) (string, error) {
-	vars := mux.Vars(r)
-	teamID, ok := vars["teamID"]
-	if !ok {
-		return "", errors.New("could not extract teamID")
-	}
-	return teamID, nil
 }

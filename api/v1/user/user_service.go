@@ -2,12 +2,11 @@ package user
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	"github.com/MninaTB/vacadm/api/v1/util"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/model"
 )
@@ -53,7 +52,7 @@ func (u *userService) Create(w http.ResponseWriter, r *http.Request) {
 func (u *userService) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "read")
 	logger.Info("get user by id")
-	userID, err := extractUserID(r)
+	userID, err := util.UserIDFromRequest(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -117,7 +116,7 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 func (u *userService) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "delete")
 	logger.Info("delete user")
-	userID, err := extractUserID(r)
+	userID, err := util.UserIDFromRequest(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -131,13 +130,4 @@ func (u *userService) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	u.logger.Info("delete user with id: ", userID)
 	w.WriteHeader(http.StatusAccepted)
-}
-
-func extractUserID(r *http.Request) (string, error) {
-	vars := mux.Vars(r)
-	usrID, ok := vars["userID"]
-	if !ok {
-		return "", errors.New("could not extract userID")
-	}
-	return usrID, nil
 }
