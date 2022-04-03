@@ -3,7 +3,6 @@ package mariadb
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -801,13 +800,39 @@ func (m *MariaDB) DeleteVaccationRessource(ctx context.Context, uuid string) err
 }
 
 func (m *MariaDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
-	return false, errors.New("not implemented")
+	u, err := m.GetUserByID(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+	next := u
+	for next.ParentID != nil {
+		if *next.ParentID == parentID {
+			return true, nil
+		}
+		parent, err := m.GetUserByID(ctx, *next.ParentID)
+		if err != nil {
+			return false, nil
+		}
+		next = parent
+	}
+	return false, nil
 }
 
 func (m *MariaDB) IsTeamMember(ctx context.Context, teamID, userID string) (bool, error) {
-	return false, errors.New("not implemented")
+	u, err := m.GetUserByID(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+	if u.TeamID == nil {
+		return false, nil
+	}
+	return *u.TeamID == teamID, nil
 }
 
 func (m *MariaDB) IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error) {
-	return false, errors.New("not implemented")
+	t, err := m.GetTeamByID(ctx, teamID)
+	if err != nil {
+		return false, err
+	}
+	return t.OwnerID == userID, nil
 }
