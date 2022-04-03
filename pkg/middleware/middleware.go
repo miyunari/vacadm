@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/MninaTB/vacadm/api/v1/util"
+	"github.com/MninaTB/vacadm/pkg/database"
 	jwt "github.com/MninaTB/vacadm/pkg/jwt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -14,13 +14,7 @@ type Validator interface {
 	Valid(token string) (userID string, teamID string, err error)
 }
 
-type RelationDB interface {
-	IsParentUser(ctx context.Context, userID, parentID string) (bool, error)
-	IsTeamMember(ctx context.Context, teamID, userID string) (bool, error)
-	IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error)
-}
-
-func shallPass(r *http.Request, db RelationDB, rUserID, rTeamID string) (bool, error) {
+func shallPass(r *http.Request, db database.RelationDB, rUserID, rTeamID string) (bool, error) {
 	userID, errUserID := util.UserIDFromRequest(r)
 	teamID, errTeamID := util.TeamIDFromRequest(r)
 
@@ -51,7 +45,7 @@ func shallPass(r *http.Request, db RelationDB, rUserID, rTeamID string) (bool, e
 	return (isUser || isParent) && (isMember || isOwner), nil
 }
 
-func Auth(v Validator, db RelationDB) mux.MiddlewareFunc {
+func Auth(v Validator, db database.RelationDB) mux.MiddlewareFunc {
 	logger := logrus.WithField("component", "auth-middleware")
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
