@@ -33,7 +33,7 @@ func shallPass(r *http.Request, db RelationDB, rUserID, rTeamID string) (bool, e
 	if err != nil {
 		return false, err
 	}
-	if errUserID != nil && errTeamID == util.ErrDoesNotExistTeamID {
+	if errUserID == nil && errTeamID == util.ErrDoesNotExistTeamID {
 		return isUser || isParent, nil
 	}
 	isMember, err := db.IsTeamMember(r.Context(), teamID, rTeamID)
@@ -44,14 +44,14 @@ func shallPass(r *http.Request, db RelationDB, rUserID, rTeamID string) (bool, e
 	if err != nil {
 		return false, err
 	}
-	if errUserID == util.ErrDoesNotExistUserID && errTeamID != nil {
+	if errUserID == util.ErrDoesNotExistUserID && errTeamID == nil {
 		return isMember || isOwner, nil
 	}
 
 	return (isUser || isParent) && (isMember || isOwner), nil
 }
 
-func Auth(t Validator, db RelationDB) mux.MiddlewareFunc {
+func Auth(v Validator, db RelationDB) mux.MiddlewareFunc {
 	logger := logrus.WithField("component", "auth-middleware")
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func Auth(t Validator, db RelationDB) mux.MiddlewareFunc {
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
-			userID, teamID, err := t.Valid(token)
+			userID, teamID, err := v.Valid(token)
 			if err != nil {
 				logger.Error(err)
 				w.WriteHeader(http.StatusForbidden)
