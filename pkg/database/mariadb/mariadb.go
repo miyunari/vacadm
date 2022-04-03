@@ -727,7 +727,7 @@ func (m *MariaDB) GetVaccationRessourceByID(ctx context.Context, uuid string) (*
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccationRessources(ctx context.Context) ([]*model.VaccationRessource, error) {
+func (m *MariaDB) ListVaccationRessource(ctx context.Context) ([]*model.VaccationRessource, error) {
 	allVaccationRessources := make([]*model.VaccationRessource, 0)
 	rows, err := m.db.QueryContext(ctx, basicVaccationRessourceSelect)
 	if err != nil {
