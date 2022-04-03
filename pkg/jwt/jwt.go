@@ -44,7 +44,7 @@ func (t *Tokenizer) Generate(u *model.User) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(t.hmacSecret)
 }
 
-func (t *Tokenizer) Valid(token string) error {
+func (t *Tokenizer) Valid(token string) (string, string, error) {
 	claims := &UserClaims{}
 	// Parse the JWT string and store the result in `claims`.
 	// Note that we are passing the key in this method as well. This method will
@@ -53,13 +53,14 @@ func (t *Tokenizer) Valid(token string) error {
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return t.hmacSecret, nil
 	})
-	return err
+	return claims.UserID, claims.TeamID, err
 }
 
 type UserClaims struct {
 	jwt.StandardClaims
 
 	UserID string
+	TeamID string
 }
 
 func (u *UserClaims) Valid() error {
