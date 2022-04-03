@@ -61,11 +61,13 @@ const (
 
 	teamCreate = `
 		INSERT INTO team (
-			id, name,
+			id, 
+			owner_id, name,
 			created_at, updated_at
 		)
 	  	VALUES (
-			UUID(), ?,
+			UUID(), 
+			?, ?,
 			NOW(), NOW()
 	  	)RETURNING id, created_at
 	`
@@ -73,7 +75,7 @@ const (
 	basicTeamSelect = `
 	  	SELECT
 			id,
-			name,
+			owner_id, name,
 		  	created_at, updated_at,
 	  	FROM team
 	`
@@ -89,6 +91,7 @@ const (
 	teamUpdate = `
 		UPDATE team
   		SET 
+			owner_id = ?,
 	  		name = ?,
 	  		updated_at = NOW()
   		WHERE id = ?
@@ -343,7 +346,7 @@ func (m *MariaDB) DeleteUser(ctx context.Context, uuid string) error {
 }
 
 func (m *MariaDB) CreateTeam(ctx context.Context, t *model.Team) (*model.Team, error) {
-	row, err := m.db.QueryContext(ctx, teamCreate, t.Name)
+	row, err := m.db.QueryContext(ctx, teamCreate, t.OwnerID, t.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +374,7 @@ func (m *MariaDB) GetTeamByID(ctx context.Context, uuid string) (*model.Team, er
 	}
 	t := &model.Team{}
 	var createdAt, updatedAt sql.NullTime
-	err = row.Scan(&t.ID, &createdAt, &updatedAt, &t.Name)
+	err = row.Scan(&t.ID, &t.OwnerID, &t.Name, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -393,7 +396,7 @@ func (m *MariaDB) ListTeams(ctx context.Context) ([]*model.Team, error) {
 	var createdAt, updatedAt sql.NullTime
 	for rows.Next() {
 		t := model.Team{}
-		err = rows.Scan(&t.ID, t.Name, &createdAt, &updatedAt)
+		err = rows.Scan(&t.ID, &t.OwnerID, t.Name, &createdAt, &updatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -444,7 +447,7 @@ func (m *MariaDB) UpdateTeam(ctx context.Context, t *model.Team) (*model.Team, e
 	if err != nil {
 		return nil, err
 	}
-	_, err = tx.ExecContext(ctx, teamUpdate, t.Name, t.ID)
+	_, err = tx.ExecContext(ctx, teamUpdate, t.OwnerID, t.Name, t.ID)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			return nil, err
