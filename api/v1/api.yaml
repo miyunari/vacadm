@@ -1,0 +1,666 @@
+openapi: 3.0.0
+info: 
+  title: "VacAdm"
+  description: REST-API Spezifikation
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080/
+    description: ""
+security:
+  - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    User_Request:
+      properties:
+        parent_id:
+          type: string
+        team_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+      example:
+        parent_id: "f5742f08-55ae-41f9-bca0-3600b466106c"
+        team_id: "1ff63524-156f-466d-b287-4258811444dd"
+        first_name: "Max"
+        last_name: "Mustermann"
+        email: "max@mustermann.de"
+
+    User_Response:
+      properties:
+        parent_id:
+          type: string
+        team_id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        created_at:
+          type: string 
+          format: date-time
+        updated_at:
+          type: string 
+          format: date-time
+      example:
+        parent_id: "f5742f08-55ae-41f9-bca0-3600b466106c"
+        team_id: "1ff63524-156f-466d-b287-4258811444dd"
+        first_name: "Max"
+        last_name: "Mustermann"
+        email: "max@mustermann.de"
+        created_at: "2022-04-05T08:57:32Z"
+        updated_at: "2022-04-05T08:57:32Z"
+
+    Team_Request:
+      properties:
+        owner_id:
+          type: string
+        name:
+          type: string
+      example:
+        owner_id: "1ff63524-156f-466d-b287-4258811444dd"
+        last_name: "Example-Team"
+
+    Team_Response:
+      properties:
+        owner_id:
+          type: string
+        name:
+          type: string
+        created_at:
+          type: string 
+          format: date-time
+        updated_at:
+          type: string 
+          format: date-time
+      example:
+        owner_id: "1ff63524-156f-466d-b287-4258811444dd"
+        name: "Example-Team"
+        created_at: "2022-04-05T08:57:32Z"
+        updated_at: "2022-04-05T08:57:32Z"
+
+    Vaccation_Request:
+      properties:
+        user_id:
+          type: string
+        approved_by:
+          type: string
+          example: "1ff63524-156f-466d-b287-4258811444dd"
+        from:
+          type: string
+          format: date
+          example: "2022-04-06"
+        to:
+          type: string
+          format: date
+          example: "2022-04-07"
+      example:
+        user_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        approved_by: "1ff63524-156f-466d-b287-4258811444dd"
+        from: "2022-04-05"
+        to: "2022-04-05"
+
+    Vaccation_Response:
+      properties:
+        user_id:
+          type: string
+        approved_by:
+          type: string
+          example: "1ff63524-156f-466d-b287-4258811444dd"
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        created_at:
+          type: string 
+          format: date-time
+      example:
+        user_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        approved_by: "1ff63524-156f-466d-b287-4258811444dd"
+        from: "2022-04-06"
+        to: "2022-04-07"
+        created_at: "2022-04-05T08:57:32Z"
+
+    Vaccation-Request_Request:
+      properties:
+        user_id:
+          type: string
+        from:
+          type: string
+          format: date
+          example: "2022-04-06"
+        to:
+          type: string
+          format: date
+          example: "2022-04-07"
+      example:
+        user_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        from: "2022-04-05"
+        to: "2022-04-05"
+
+    Vaccation-Request_Response:
+      properties:
+        user_id:
+          type: string
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        created_at:
+          type: string 
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        user_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        approved_by: "1ff63524-156f-466d-b287-4258811444dd"
+        from: "2022-04-06"
+        to: "2022-04-07"
+        created_at: "2022-04-05T08:57:32Z"
+        updated_at: "2022-04-05T08:57:32Z"
+
+    Vaccation-Ressource_Request:
+      properties:
+        user_id:
+          type: string
+        yearly_days:
+          type: integer
+        from:
+          type: string
+          format: date
+          example: "2022-04-06"
+        to:
+          type: string
+          format: date
+          example: "2022-04-07"
+      example:
+        user_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        integer: 20
+        from: "2022-04-05"
+        to: "2022-04-05"
+
+    Vaccation-Ressource_Response:
+      properties:
+        user_id:
+          type: string
+        yearly_days:
+          type: integer
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        created_at:
+          type: string 
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      example:
+        user_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        approved_by: "1ff63524-156f-466d-b287-4258811444dd"
+        from: "2022-04-06"
+        to: "2022-04-07"
+        created_at: "2022-04-05T08:57:32Z"
+        updated_at: "2022-04-05T08:57:32Z"
+
+paths:
+  /user:
+    put:
+      summary: Create new user 
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User_Request"
+      tags: 
+        - User
+      responses:
+        "200":
+          description: "user successfully created"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User_Response"
+    
+    get:
+      summary: List all users
+      description: ""
+      tags:
+        - User
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User_Response"
+    
+  /user/{user_id}:
+    get:
+      summary: Gets the user by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: integer
+      tags: 
+        - User
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User_Response"
+  
+    patch:
+      summary: Update the user by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User_Request"
+      tags: 
+        - User
+      responses:
+        "200":
+          description: "user successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User_Response"
+    
+    delete:
+      summary: delete the user by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: integer
+      tags:
+        - User
+      responses:
+        "200":
+          description: "user successfully deleted"
+
+  /team:
+    put:
+      summary: Create new team 
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Team_Request"
+      tags: 
+        - Team
+      responses:
+        "200":
+          description: "team successfully created"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team_Response"
+    
+    get:
+      summary: List all teams
+      description: ""
+      tags:
+        - Team
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Team_Response"
+    
+  /team/{team_id}:
+    get:
+      summary: Gets the team by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: team_id
+          schema:
+            type: integer
+      tags: 
+        - Team
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team_Response"
+  
+    patch:
+      summary: Update the team by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: team_id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Team_Request"
+      tags: 
+        - Team
+      responses:
+        "200":
+          description: "team successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team_Response"
+    
+    delete:
+      summary: delete the team by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: team_id
+          schema:
+            type: integer
+      tags:
+        - Team
+      responses:
+        "200":
+          description: "team successfully deleted"
+
+  /team/{team_id}/list-users:
+    get:
+      summary: list all users from one team by team id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: team_id
+          schema:
+            type: integer
+      tags:
+        - Team
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User_Response"
+
+  /user/{user_id}/vaccation:    
+    get:
+      summary: List all vaccations
+      description: ""
+      tags:
+        - Vaccation
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vaccation_Response"
+    
+  /user/{user_id}/vaccation/{vaccation_id}:
+    get:
+      summary: Gets the vaccation by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: vaccation_id
+          schema:
+            type: integer
+      tags: 
+        - Vaccation
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation_Response"
+      
+    delete:
+      summary: delete the vaccation by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: vaccation_id
+          schema:
+            type: integer
+      tags:
+        - Vaccation
+      responses:
+        "200":
+          description: "vaccation successfully deleted"
+
+  /user/{user_id}/vaccation/request:
+    put:
+      summary: Create new vaccation-request 
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vaccation-Request_Request"
+      tags: 
+        - Vaccation-Request
+      responses:
+        "200":
+          description: "vaccation-request successfully created"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation-Request_Response"
+    
+    get:
+      summary: List all vaccation-requests
+      description: ""
+      tags:
+        - Vaccation-Request
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vaccation-Request_Response"
+    
+  /user/{user_id}/vaccation/request/{id}:
+    get:
+      summary: Gets the vaccation-request by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: vaccation_id
+          schema:
+            type: integer
+      tags: 
+        - Vaccation-Request
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation-Request_Response"
+  
+    patch:
+      summary: Update the vaccation-request by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vaccation-Request_Request"
+      tags: 
+        - Vaccation-Request
+      responses:
+        "200":
+          description: "vaccation-request successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation-Request_Response"
+    
+    delete:
+      summary: delete the vaccation-request by id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: integer
+      tags:
+        - Vaccation-Request
+      responses:
+        "200":
+          description: "vaccation-request successfully deleted"
+
+  /user/{user_id}/vaccation/ressource:
+    put:
+      summary: Create new vaccation-ressource
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vaccation-Ressource_Request"
+      tags: 
+        - Vaccation-Ressource
+      responses:
+        "200":
+          description: "vaccation-ressource successfully created"
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation-Ressource_Response"
+    
+    get:
+      summary: List all vaccation-ressources
+      description: ""
+      tags:
+        - Vaccation-Ressource
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vaccation-Ressource_Response"
+    
+  /user/{user_id}/vaccation/ressource/{id}:
+    get:
+      summary: Gets the vaccation-ressource of one user by user id and vaccation-ressource id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: integer
+      tags: 
+        - Vaccation-Ressource
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation-Ressource_Response"
+  
+    patch:
+      summary: Update the vaccation-ressource by user id and vaccation id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vaccation-Ressource_Request"
+      tags: 
+        - Vaccation-Ressource
+      responses:
+        "200":
+          description: "vaccation-ressource successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vaccation-Ressource_Response"
+    
+    delete:
+      summary: delete the vaccation-ressource by user id and vaccation id
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: integer
+      tags:
+        - Vaccation-Ressource
+      responses:
+        "200":
+          description: "vaccation-ressource successfully deleted"
