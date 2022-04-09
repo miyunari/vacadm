@@ -21,6 +21,7 @@ import (
 	"github.com/MninaTB/vacadm/pkg/middleware"
 	"github.com/MninaTB/vacadm/pkg/model"
 	"github.com/MninaTB/vacadm/pkg/notify"
+	"github.com/MninaTB/vacadm/pkg/version"
 )
 
 func main() {
@@ -42,6 +43,8 @@ func main() {
 	flag.Parse()
 
 	logger := logrus.New()
+	logger.Info(version.Version())
+
 	var db database.Database = inmemory.NewInmemoryDB()
 	if *sqlConnStr != "" {
 		sqlDB, err := sql.Open("mysql", *sqlConnStr)
