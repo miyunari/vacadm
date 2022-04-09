@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/MninaTB/vacadm/pkg/model"
@@ -30,7 +31,33 @@ type InmemoryDB struct {
 	logger                  logrus.FieldLogger
 }
 
-func (i *InmemoryDB) CreateUser(_ context.Context, user *model.User) (*model.User, error) {
+func (i *InmemoryDB) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
+	for _, e := range i.userStore {
+		if e.Email == user.Email {
+			return nil, fmt.Errorf("email address must be unique")
+		}
+	}
+
+	if user.ParentID != nil {
+		var foundParent bool
+		for _, p := range i.userStore {
+			if *p.ParentID == *user.ParentID {
+				foundParent = true
+				break
+			}
+		}
+		if !foundParent {
+			return nil, fmt.Errorf("missing parent with id %s", *user.ParentID)
+		}
+	}
+
+	if user.TeamID != nil {
+		_, err := i.GetTeamByID(ctx, *user.TeamID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	createdAt := time.Now()
 	user.CreatedAt = &createdAt
 	user.ID = uuid.NewString()
