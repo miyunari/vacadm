@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -53,13 +54,14 @@ func main() {
 	t := jwt.NewTokenizer(secret, 365*24*time.Hour)
 	apiv1 := v1.NewServer(db, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
 	router := mux.NewRouter()
-	router.Path("/v1/").Handler(apiv1)
+	const pathPrefixV1 = "/v1"
+	router.Handle(fmt.Sprintf("%s/{dummy}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
 
 	if *swaggerEnabled {
 		logger.Info("swagger endpoint \"/swagger\" enabled")
 		router.Path("/swagger").Methods(http.MethodGet).HandlerFunc(swagger.Index)
 		router.Path("/swagger/api.yaml").Methods(http.MethodGet).HandlerFunc(v1.API)
-		router.Handle("/swagger/{rest}",
+		router.Handle("/swagger/{dummy}",
 			http.StripPrefix("/swagger/", http.FileServer(http.FS(swagger.Get()))))
 	}
 
