@@ -9,21 +9,24 @@ import (
 	vacationrequest "github.com/MninaTB/vacadm/api/v1/vacation_request"
 	vacationressources "github.com/MninaTB/vacadm/api/v1/vacation_ressource"
 	"github.com/MninaTB/vacadm/pkg/database"
+	"github.com/MninaTB/vacadm/pkg/notify"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 type server struct {
-	logger logrus.FieldLogger
-	db     database.Database
-	mw     []mux.MiddlewareFunc
+	logger   logrus.FieldLogger
+	db       database.Database
+	mw       []mux.MiddlewareFunc
+	notifier notify.Notifier
 }
 
-func NewServer(db database.Database, middleware ...mux.MiddlewareFunc) http.Handler {
+func NewServer(db database.Database, notifier notify.Notifier, middleware ...mux.MiddlewareFunc) http.Handler {
 	return &server{
-		logger: logrus.New().WithField("api", "v1"),
-		mw:     middleware,
-		db:     db,
+		logger:   logrus.New().WithField("api", "v1"),
+		mw:       middleware,
+		db:       db,
+		notifier: notifier,
 	}
 }
 
@@ -34,7 +37,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	vacSvc := vacation.NewVacation(s.db, s.logger)
 
-	vacReqSvc := vacationrequest.NewVacationRequest(s.db, s.logger)
+	vacReqSvc := vacationrequest.NewVacationRequest(s.db, s.notifier, s.logger)
 
 	vacResSvc := vacationressources.NewVacationRessource(s.db, s.logger)
 
@@ -71,7 +74,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.Path("/user/{userID}/vacation/ressource/{vacation-ressourceID}").Methods(http.MethodPatch).HandlerFunc(vacResSvc.Update)
 	router.Path("/user/{userID}/vacation/ressource/{vacation-ressourceID}").Methods(http.MethodDelete).HandlerFunc(vacResSvc.Delete)
 	if s.mw != nil {
-		router.Use(s.mw...)
+		//router.Use(s.mw...)
 	}
 
 	router.ServeHTTP(w, r)

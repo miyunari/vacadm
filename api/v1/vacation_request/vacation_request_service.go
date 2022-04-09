@@ -3,24 +3,29 @@ package vacationrequest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/MninaTB/vacadm/api/v1/util"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/model"
+	"github.com/MninaTB/vacadm/pkg/notify"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
-func NewVacationRequest(store database.Database, logger logrus.FieldLogger) *vacationRequest {
+func NewVacationRequest(store database.Database, notifier notify.Notifier, logger logrus.FieldLogger) *vacationRequest {
 	return &vacationRequest{
-		store:  store,
-		logger: logger.WithField("component", "vacation-request-service"),
+		store:    store,
+		notifier: notifier,
+		logger:   logger.WithField("component", "vacation-request-service"),
 	}
 }
 
 type vacationRequest struct {
-	store  database.Database
-	logger logrus.FieldLogger
+	store    database.Database
+	notifier notify.Notifier
+	logger   logrus.FieldLogger
 }
 
 func (v *vacationRequest) Create(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +43,27 @@ func (v *vacationRequest) Create(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Error(err)
 		return
+	}
+	userID, err := util.UserIDFromRequest(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		logger.Error(err)
+		return
+	}
+	user, err := v.store.GetUserByID(r.Context(), userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error(err)
+		return
+	}
+	if user.ParentID != nil {
+		action := fmt.Sprintf("new vacation request from %s %s, id: %s", user.FirstName, user.LastName, user.ID)
+		err = v.notifier.NotifyUser(r.Context(), *user.ParentID, action)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error(err)
+			return
+		}
 	}
 	err = json.NewEncoder(w).Encode(newVR)
 	if err != nil {
@@ -104,6 +130,27 @@ func (v *vacationRequest) Update(w http.ResponseWriter, r *http.Request) {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	}
+	userID, err := util.UserIDFromRequest(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		logger.Error(err)
+		return
+	}
+	user, err := v.store.GetUserByID(r.Context(), userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error(err)
+		return
+	}
+	if user.ParentID != nil {
+		action := fmt.Sprintf("updated vacation request from %s %s, id: %s", user.FirstName, user.LastName, user.ID)
+		err = v.notifier.NotifyUser(r.Context(), *user.ParentID, action)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error(err)
+			return
+		}
 	}
 	err = json.NewEncoder(w).Encode(&newVR)
 	if err != nil {

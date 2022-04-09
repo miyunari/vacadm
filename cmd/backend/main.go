@@ -20,6 +20,7 @@ import (
 	"github.com/MninaTB/vacadm/pkg/jwt"
 	"github.com/MninaTB/vacadm/pkg/middleware"
 	"github.com/MninaTB/vacadm/pkg/model"
+	"github.com/MninaTB/vacadm/pkg/notify"
 )
 
 func main() {
@@ -30,9 +31,13 @@ func main() {
 		initRoot = flag.Bool("init.root", true, "create root user on startup")
 		address  = flag.String("address", "localhost:8080", "ip:port")
 		// TODO: remove weak default secret
-		jwtKey     = flag.String("secret", "my-secret", "secret for jwt token")
-		sqlConnStr = flag.String("sql.conn", "", "sql connection str. user:password@/dbname example: root:my-secret-pw@(127.0.0.1:3306)/test?parseTime=true")
-		srvTimeout = flag.Duration("timeout", 30*time.Second, "server timeout")
+		jwtKey       = flag.String("secret", "my-secret", "secret for jwt token")
+		sqlConnStr   = flag.String("sql.conn", "", "sql connection str. user:password@/dbname example: root:my-secret-pw@(127.0.0.1:3306)/test?parseTime=true")
+		srvTimeout   = flag.Duration("timeout", 30*time.Second, "server timeout")
+		smtpHost     = flag.String("smtp.host", "", "address of smtp server")
+		smtpPort     = flag.String("smtp.port", "", "port of smtp server")
+		smtpUser     = flag.String("smtp.user", "", "smtp user mail address")
+		smtpPassword = flag.String("smtp.password", "", "smtp user password")
 	)
 	flag.Parse()
 
@@ -47,12 +52,21 @@ func main() {
 		db = mariadb.NewMariaDB(sqlDB)
 	}
 
+	var notifier notify.Notifier = notify.NewNoopNotifier()
+	if *smtpHost != "" && *smtpPort != "" && *smtpUser != "" {
+		logger.WithFields(logrus.Fields{
+			"host": *smtpHost,
+			"port": *smtpPort,
+		}).Infof("enabled smtp notifier, address: %s", *smtpUser)
+		notifier = notify.NewMailer(*smtpHost, *smtpPort, *smtpUser, *smtpPassword, db)
+	}
+
 	secret := []byte(*jwtKey)
 	if len(secret) == 0 {
 		logger.Fatal("missing jwt secret")
 	}
 	t := jwt.NewTokenizer(secret, 365*24*time.Hour)
-	apiv1 := v1.NewServer(db, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
+	apiv1 := v1.NewServer(db, notifier, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
 	router := mux.NewRouter()
 	const pathPrefixV1 = "/v1"
 	router.Handle(fmt.Sprintf("%s/{dummy}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
