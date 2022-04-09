@@ -1,6 +1,7 @@
 package vacation
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -54,12 +55,37 @@ func (v *vacation) List(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	if r.Header.Get("Content-Type") == "application/csv" {
+		logger.Info("csv requested")
+		csvWriter := csv.NewWriter(w)
+		for _, l := range list {
+			approvedBy := ""
+			if l.ApprovedBy != nil {
+				approvedBy = l.ApprovedBy.ID
+			}
+			var createdAt string
+			if l.CreatedAt != nil {
+				createdAt = l.CreatedAt.String()
+			}
+			var deletedAt string
+			if l.DeletedAt != nil {
+				deletedAt = l.DeletedAt.String()
+			}
+			err = csvWriter.Write([]string{l.ID, l.UserID, approvedBy, l.From.String(), l.To.String(), createdAt, deletedAt})
+			if err != nil {
+				logger.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+		csvWriter.Flush()
+		return
+	}
 	err = json.NewEncoder(w).Encode(&list)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	v.logger.Info("get list of vacations")
 }
 
 func (v *vacation) Delete(w http.ResponseWriter, r *http.Request) {
