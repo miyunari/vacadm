@@ -13,6 +13,28 @@ type VacationRessource struct {
 	UpdatedAt  *time.Time `json:"updated_at"`
 }
 
-func (vr VacationRessource) Copy() *VacationRessource {
-	return &vr
+func (v *VacationRessource) Copy() *VacationRessource {
+	var createdAt, deletedAt, updatedAt *time.Time
+	if v.CreatedAt != nil {
+		ct := time.Unix(0, v.CreatedAt.UnixNano())
+		createdAt = &ct
+	}
+	if v.DeletedAt != nil {
+		dt := time.Unix(0, v.DeletedAt.UnixNano())
+		deletedAt = &dt
+	}
+	if v.UpdatedAt != nil {
+		ut := time.Unix(0, v.UpdatedAt.UnixNano())
+		updatedAt = &ut
+	}
+	return &VacationRessource{
+		ID:         v.ID,
+		UserID:     v.UserID,
+		YearlyDays: v.YearlyDays,
+		From:       v.From,
+		To:         v.To,
+		CreatedAt:  createdAt,
+		DeletedAt:  deletedAt,
+		UpdatedAt:  updatedAt,
+	}
 }
