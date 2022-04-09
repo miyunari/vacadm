@@ -18,8 +18,17 @@ jobs:
       with:
         go-version: 1.17
 
-    - name: Run tests
-      run: go test -v ./...
+    - name: Install CI tools
+      run: make install-tools
 
-    - name: Build test
-      run: go build cmd/backend/*.go
+    - name: Run linter
+      run: make lint
+
+    - name: Run tests
+      run: make test
+
+    - name: Build backend linux amd64
+      run: make build_backend_linux_amd64
+
+    - name: Build backend windows amd64
+      run: make build_backend_windows_amd64
