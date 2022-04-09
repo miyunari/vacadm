@@ -88,7 +88,7 @@ components:
         created_at: "2022-04-05T08:57:32Z"
         updated_at: "2022-04-05T08:57:32Z"
 
-    Vaccation_Request:
+    Vacation_Request:
       properties:
         user_id:
           type: string
@@ -109,7 +109,7 @@ components:
         from: "2022-04-05"
         to: "2022-04-05"
 
-    Vaccation_Response:
+    Vacation_Response:
       properties:
         user_id:
           type: string
@@ -132,7 +132,7 @@ components:
         to: "2022-04-07"
         created_at: "2022-04-05T08:57:32Z"
 
-    Vaccation-Request_Request:
+    Vacation-Request_Request:
       properties:
         user_id:
           type: string
@@ -149,7 +149,7 @@ components:
         from: "2022-04-05"
         to: "2022-04-05"
 
-    Vaccation-Request_Response:
+    Vacation-Request_Response:
       properties:
         user_id:
           type: string
@@ -173,7 +173,7 @@ components:
         created_at: "2022-04-05T08:57:32Z"
         updated_at: "2022-04-05T08:57:32Z"
 
-    Vaccation-Ressource_Request:
+    Vacation-Ressource_Request:
       properties:
         user_id:
           type: string
@@ -193,7 +193,7 @@ components:
         from: "2022-04-05"
         to: "2022-04-05"
 
-    Vaccation-Ressource_Response:
+    Vacation-Ressource_Response:
       properties:
         user_id:
           type: string
@@ -428,12 +428,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/User_Response"
 
-  /user/{user_id}/vaccation:    
+  /user/{user_id}/vacation:    
     get:
-      summary: List all vaccations
+      summary: List all vacations
       description: ""
       tags:
-        - Vaccation
+        - Vacation
       responses:
         "200":
           description: ""
@@ -442,67 +442,67 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Vaccation_Response"
+                  $ref: "#/components/schemas/Vacation_Response"
     
-  /user/{user_id}/vaccation/{vaccation_id}:
+  /user/{user_id}/vacation/{vacation_id}:
     get:
-      summary: Gets the vaccation by id
+      summary: Gets the vacation by id
       description: ""
       parameters:
         - in: path
           required: true
-          name: vaccation_id
+          name: vacation_id
           schema:
             type: integer
       tags: 
-        - Vaccation
+        - Vacation
       responses:
         "200":
           description: ""
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation_Response"
+                $ref: "#/components/schemas/Vacation_Response"
       
     delete:
-      summary: delete the vaccation by id
+      summary: delete the vacation by id
       description: ""
       parameters:
         - in: path
           required: true
-          name: vaccation_id
+          name: vacation_id
           schema:
             type: integer
       tags:
-        - Vaccation
+        - Vacation
       responses:
         "200":
-          description: "vaccation successfully deleted"
+          description: "vacation successfully deleted"
 
-  /user/{user_id}/vaccation/request:
+  /user/{user_id}/vacation/request:
     put:
-      summary: Create new vaccation-request 
+      summary: Create new vacation-request 
       description: ""
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Vaccation-Request_Request"
+              $ref: "#/components/schemas/Vacation-Request_Request"
       tags: 
-        - Vaccation-Request
+        - Vacation-Request
       responses:
         "200":
-          description: "vaccation-request successfully created"
+          description: "vacation-request successfully created"
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation-Request_Response"
+                $ref: "#/components/schemas/Vacation-Request_Response"
     
     get:
-      summary: List all vaccation-requests
+      summary: List all vacation-requests
       description: ""
       tags:
-        - Vaccation-Request
+        - Vacation-Request
       responses:
         "200":
           description: ""
@@ -511,30 +511,30 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Vaccation-Request_Response"
+                  $ref: "#/components/schemas/Vacation-Request_Response"
     
-  /user/{user_id}/vaccation/request/{id}:
+  /user/{user_id}/vacation/request/{id}:
     get:
-      summary: Gets the vaccation-request by id
+      summary: Gets the vacation-request by id
       description: ""
       parameters:
         - in: path
           required: true
-          name: vaccation_id
+          name: vacation_id
           schema:
             type: integer
       tags: 
-        - Vaccation-Request
+        - Vacation-Request
       responses:
         "200":
           description: ""
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation-Request_Response"
+                $ref: "#/components/schemas/Vacation-Request_Response"
   
     patch:
-      summary: Update the vaccation-request by id
+      summary: Update the vacation-request by id
       description: ""
       parameters:
         - in: path
@@ -546,19 +546,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Vaccation-Request_Request"
+              $ref: "#/components/schemas/Vacation-Request_Request"
       tags: 
-        - Vaccation-Request
+        - Vacation-Request
       responses:
         "200":
-          description: "vaccation-request successfully updated"
+          description: "vacation-request successfully updated"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation-Request_Response"
+                $ref: "#/components/schemas/Vacation-Request_Response"
     
     delete:
-      summary: delete the vaccation-request by id
+      summary: delete the vacation-request by id
       description: ""
       parameters:
         - in: path
@@ -567,35 +567,35 @@ paths:
           schema:
             type: integer
       tags:
-        - Vaccation-Request
+        - Vacation-Request
       responses:
         "200":
-          description: "vaccation-request successfully deleted"
+          description: "vacation-request successfully deleted"
 
-  /user/{user_id}/vaccation/ressource:
+  /user/{user_id}/vacation/ressource:
     put:
-      summary: Create new vaccation-ressource
+      summary: Create new vacation-ressource
       description: ""
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Vaccation-Ressource_Request"
+              $ref: "#/components/schemas/Vacation-Ressource_Request"
       tags: 
-        - Vaccation-Ressource
+        - Vacation-Ressource
       responses:
         "200":
-          description: "vaccation-ressource successfully created"
+          description: "vacation-ressource successfully created"
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation-Ressource_Response"
+                $ref: "#/components/schemas/Vacation-Ressource_Response"
     
     get:
-      summary: List all vaccation-ressources
+      summary: List all vacation-ressources
       description: ""
       tags:
-        - Vaccation-Ressource
+        - Vacation-Ressource
       responses:
         "200":
           description: ""
@@ -604,11 +604,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Vaccation-Ressource_Response"
+                  $ref: "#/components/schemas/Vacation-Ressource_Response"
     
-  /user/{user_id}/vaccation/ressource/{id}:
+  /user/{user_id}/vacation/ressource/{id}:
     get:
-      summary: Gets the vaccation-ressource of one user by user id and vaccation-ressource id
+      summary: Gets the vacation-ressource of one user by user id and vacation-ressource id
       description: ""
       parameters:
         - in: path
@@ -617,17 +617,17 @@ paths:
           schema:
             type: integer
       tags: 
-        - Vaccation-Ressource
+        - Vacation-Ressource
       responses:
         "200":
           description: ""
           content: 
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation-Ressource_Response"
+                $ref: "#/components/schemas/Vacation-Ressource_Response"
   
     patch:
-      summary: Update the vaccation-ressource by user id and vaccation id
+      summary: Update the vacation-ressource by user id and vacation id
       description: ""
       parameters:
         - in: path
@@ -639,19 +639,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Vaccation-Ressource_Request"
+              $ref: "#/components/schemas/Vacation-Ressource_Request"
       tags: 
-        - Vaccation-Ressource
+        - Vacation-Ressource
       responses:
         "200":
-          description: "vaccation-ressource successfully updated"
+          description: "vacation-ressource successfully updated"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Vaccation-Ressource_Response"
+                $ref: "#/components/schemas/Vacation-Ressource_Response"
     
     delete:
-      summary: delete the vaccation-ressource by user id and vaccation id
+      summary: delete the vacation-ressource by user id and vacation id
       description: ""
       parameters:
         - in: path
@@ -660,7 +660,7 @@ paths:
           schema:
             type: integer
       tags:
-        - Vaccation-Ressource
+        - Vacation-Ressource
       responses:
         "200":
-          description: "vaccation-ressource successfully deleted"
+          description: "vacation-ressource successfully deleted"

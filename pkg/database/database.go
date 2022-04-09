@@ -25,19 +25,19 @@ type Database interface {
 	UpdateTeam(context.Context, *model.Team) (*model.Team, error)
 	DeleteTeam(context.Context, string) error
 
-	GetVaccationByID(context.Context, string) (*model.Vaccation, error)
-	ListVaccations(context.Context) ([]*model.Vaccation, error)
-	DeleteVaccation(context.Context, string) error
+	GetVacationByID(context.Context, string) (*model.Vacation, error)
+	ListVacations(context.Context) ([]*model.Vacation, error)
+	DeleteVacation(context.Context, string) error
 
-	CreateVaccationRequest(context.Context, *model.VaccationRequest) (*model.VaccationRequest, error)
-	GetVaccationRequestByID(context.Context, string) (*model.VaccationRequest, error)
-	ListVaccationRequests(context.Context) ([]*model.VaccationRequest, error)
-	UpdateVaccationRequest(context.Context, *model.VaccationRequest) (*model.VaccationRequest, error)
-	DeleteVaccationRequest(context.Context, string) error
+	CreateVacationRequest(context.Context, *model.VacationRequest) (*model.VacationRequest, error)
+	GetVacationRequestByID(context.Context, string) (*model.VacationRequest, error)
+	ListVacationRequests(context.Context) ([]*model.VacationRequest, error)
+	UpdateVacationRequest(context.Context, *model.VacationRequest) (*model.VacationRequest, error)
+	DeleteVacationRequest(context.Context, string) error
 
-	CreateVaccationRessource(context.Context, *model.VaccationRessource) (*model.VaccationRessource, error)
-	GetVaccationRessourceByID(context.Context, string) (*model.VaccationRessource, error)
-	ListVaccationRessource(context.Context) ([]*model.VaccationRessource, error)
-	UpdateVaccationRessource(context.Context, *model.VaccationRessource) (*model.VaccationRessource, error)
-	DeleteVaccationRessource(context.Context, string) error
+	CreateVacationRessource(context.Context, *model.VacationRessource) (*model.VacationRessource, error)
+	GetVacationRessourceByID(context.Context, string) (*model.VacationRessource, error)
+	ListVacationRessource(context.Context) ([]*model.VacationRessource, error)
+	UpdateVacationRessource(context.Context, *model.VacationRessource) (*model.VacationRessource, error)
+	DeleteVacationRessource(context.Context, string) error
 }

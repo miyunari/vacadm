@@ -104,28 +104,28 @@ const (
 		WHERE id = ?
 	`
 
-	basicVaccationSelect = `
+	basicVacationSelect = `
 		SELECT
   			id,
   			user_id,
 			approved_id,
 			from, to,
 			created_at
-		FROM vaccation
+		FROM vacation
 	`
 
-	vaccationSelectByID = basicVaccationSelect + `
+	vacationSelectByID = basicVacationSelect + `
 		WHERE id = ?
 	`
 
-	vaccationDelete = `
-		UPDATE vaccation
+	vacationDelete = `
+		UPDATE vacation
 		SET 
 			deleted_at = Now()
 		WHERE id = ?
 	`
 
-	vaccationRequestCreate = `
+	vacationRequestCreate = `
 		INSERT INTO user (
 			id, user_id,
 			from, to,
@@ -138,21 +138,21 @@ const (
   		) RETURNING id, created_at
 	`
 
-	basicVaccationRequestSelect = `
+	basicVacationRequestSelect = `
 	  	SELECT
 			id,
 			user_id,
 			from, to,
 		  	created_at, updated_at,
-	  	FROM vaccation_request
+	  	FROM vacation_request
 	`
 
-	vaccationRequestSelectByID = basicVaccationRequestSelect + `
+	vacationRequestSelectByID = basicVacationRequestSelect + `
 	  	WHERE id = ?
 	`
 
-	vaccationRequestUpdate = `
-		UPDATE vaccation_request
+	vacationRequestUpdate = `
+		UPDATE vacation_request
   		SET 
 			user_id = ?,
 	  		from = ?, to = ?,
@@ -160,15 +160,15 @@ const (
   		WHERE id = ?
 	`
 
-	vaccationRequestDelete = `
-		UPDATE vaccation_request
+	vacationRequestDelete = `
+		UPDATE vacation_request
 		SET 
 			updated_at = NOW(), 
 			deleted_at = Now()
 		WHERE id = ?
 	`
 
-	vaccationRessourceCreate = `
+	vacationRessourceCreate = `
 		INSERT INTO user (
 			id, 
 			user_id, yearly_days,
@@ -181,22 +181,22 @@ const (
   		) RETURNING id, created_at
 	`
 
-	basicVaccationRessourceSelect = `
+	basicVacationRessourceSelect = `
 		SELECT
 	  		id,
 	  		user_id,
 			yearly_days,
 			from, to,
 			created_at, updated_at,
-		FROM vaccation_ressource
+		FROM vacation_ressource
 	`
 
-	vaccationRessourceSelectByID = basicVaccationRessourceSelect + `
+	vacationRessourceSelectByID = basicVacationRessourceSelect + `
 		WHERE id = ?
 	`
 
-	vaccationRessourceUpdate = `
-		UPDATE vaccation_ressource
+	vacationRessourceUpdate = `
+		UPDATE vacation_ressource
 	  	SET 
 			user_id = ?,
 		  	yearly_days = ?,
@@ -205,8 +205,8 @@ const (
 	  	WHERE id = ?
 	`
 
-	vaccationRessourceDelete = `
-		UPDATE vaccationRessource
+	vacationRessourceDelete = `
+		UPDATE vacationRessource
 		SET 
 			updated_at = NOW(), 
 			deleted_at = Now()
@@ -479,13 +479,13 @@ func (m *MariaDB) DeleteTeam(ctx context.Context, uuid string) error {
 	return err
 }
 
-func (m *MariaDB) GetVaccationByID(ctx context.Context, uuid string) (*model.Vaccation, error) {
-	row := m.db.QueryRowContext(ctx, vaccationSelectByID, uuid)
+func (m *MariaDB) GetVacationByID(ctx context.Context, uuid string) (*model.Vacation, error) {
+	row := m.db.QueryRowContext(ctx, vacationSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
 	}
-	v := &model.Vaccation{}
+	v := &model.Vacation{}
 	var createdAt, from, to sql.NullTime
 	var userID sql.NullString
 	var approvedID sql.NullString
@@ -511,9 +511,9 @@ func (m *MariaDB) GetVaccationByID(ctx context.Context, uuid string) (*model.Vac
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccations(ctx context.Context) ([]*model.Vaccation, error) {
-	allVaccations := make([]*model.Vaccation, 0)
-	rows, err := m.db.QueryContext(ctx, basicVaccationSelect)
+func (m *MariaDB) ListVacations(ctx context.Context) ([]*model.Vacation, error) {
+	allVacations := make([]*model.Vacation, 0)
+	rows, err := m.db.QueryContext(ctx, basicVacationSelect)
 	if err != nil {
 		return nil, err
 	}
@@ -521,7 +521,7 @@ func (m *MariaDB) ListVaccations(ctx context.Context) ([]*model.Vaccation, error
 	var userID sql.NullString
 	var approvedID sql.NullString
 	for rows.Next() {
-		v := model.Vaccation{}
+		v := model.Vacation{}
 		err = rows.Scan(&v.ID, &createdAt, &from, &to, &userID, &approvedID)
 		if err != nil {
 			return nil, err
@@ -541,13 +541,13 @@ func (m *MariaDB) ListVaccations(ctx context.Context) ([]*model.Vaccation, error
 		if approvedID.Valid {
 			v.ApprovedBy.ID = approvedID.String
 		}
-		allVaccations = append(allVaccations, &v)
+		allVacations = append(allVacations, &v)
 	}
-	return allVaccations, nil
+	return allVacations, nil
 }
 
-func (m *MariaDB) DeleteVaccation(ctx context.Context, uuid string) error {
-	row := m.db.QueryRowContext(ctx, vaccationDelete, uuid)
+func (m *MariaDB) DeleteVacation(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vacationDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err
@@ -555,8 +555,8 @@ func (m *MariaDB) DeleteVaccation(ctx context.Context, uuid string) error {
 	return err
 }
 
-func (m *MariaDB) CreateVaccationRequest(ctx context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
-	row, err := m.db.QueryContext(ctx, vaccationRequestCreate, v.UserID, v.From, v.To)
+func (m *MariaDB) CreateVacationRequest(ctx context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
+	row, err := m.db.QueryContext(ctx, vacationRequestCreate, v.UserID, v.From, v.To)
 	if err != nil {
 		return nil, err
 	}
@@ -578,13 +578,13 @@ func (m *MariaDB) CreateVaccationRequest(ctx context.Context, v *model.Vaccation
 	return v, nil
 }
 
-func (m *MariaDB) GetVaccationRequestByID(ctx context.Context, uuid string) (*model.VaccationRequest, error) {
-	row := m.db.QueryRowContext(ctx, vaccationRequestSelectByID, uuid)
+func (m *MariaDB) GetVacationRequestByID(ctx context.Context, uuid string) (*model.VacationRequest, error) {
+	row := m.db.QueryRowContext(ctx, vacationRequestSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
 	}
-	v := &model.VaccationRequest{}
+	v := &model.VacationRequest{}
 	var userID sql.NullString
 	var createdAt, updatedAt, from, to sql.NullTime
 	err = row.Scan(&v.ID, &userID, &createdAt, &updatedAt, &from, &to)
@@ -609,16 +609,16 @@ func (m *MariaDB) GetVaccationRequestByID(ctx context.Context, uuid string) (*mo
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccationRequests(ctx context.Context) ([]*model.VaccationRequest, error) {
-	allVaccationRequests := make([]*model.VaccationRequest, 0)
-	rows, err := m.db.QueryContext(ctx, basicVaccationRequestSelect)
+func (m *MariaDB) ListVacationRequests(ctx context.Context) ([]*model.VacationRequest, error) {
+	allVacationRequests := make([]*model.VacationRequest, 0)
+	rows, err := m.db.QueryContext(ctx, basicVacationRequestSelect)
 	if err != nil {
 		return nil, err
 	}
 	var userID sql.NullString
 	var createdAt, updatedAt, from, to sql.NullTime
 	for rows.Next() {
-		v := model.VaccationRequest{}
+		v := model.VacationRequest{}
 		err = rows.Scan(&v.ID, &createdAt, &updatedAt, &from, &to, &userID)
 		if err != nil {
 			return nil, err
@@ -635,17 +635,17 @@ func (m *MariaDB) ListVaccationRequests(ctx context.Context) ([]*model.Vaccation
 		if userID.Valid {
 			v.UserID = userID.String
 		}
-		allVaccationRequests = append(allVaccationRequests, &v)
+		allVacationRequests = append(allVacationRequests, &v)
 	}
-	return allVaccationRequests, nil
+	return allVacationRequests, nil
 }
 
-func (m *MariaDB) UpdateVaccationRequest(ctx context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
+func (m *MariaDB) UpdateVacationRequest(ctx context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
-	_, err = tx.ExecContext(ctx, vaccationRequestUpdate, v.UserID, v.From, v.To, v.ID)
+	_, err = tx.ExecContext(ctx, vacationRequestUpdate, v.UserID, v.From, v.To, v.ID)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			return nil, err
@@ -669,8 +669,8 @@ func (m *MariaDB) UpdateVaccationRequest(ctx context.Context, v *model.Vaccation
 	return v, nil
 }
 
-func (m *MariaDB) DeleteVaccationRequest(ctx context.Context, uuid string) error {
-	row := m.db.QueryRowContext(ctx, vaccationRequestDelete, uuid)
+func (m *MariaDB) DeleteVacationRequest(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vacationRequestDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err
@@ -678,8 +678,8 @@ func (m *MariaDB) DeleteVaccationRequest(ctx context.Context, uuid string) error
 	return err
 }
 
-func (m *MariaDB) CreateVaccationRessource(ctx context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
-	row, err := m.db.QueryContext(ctx, vaccationRessourceCreate, v.UserID, v.YearlyDays)
+func (m *MariaDB) CreateVacationRessource(ctx context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
+	row, err := m.db.QueryContext(ctx, vacationRessourceCreate, v.UserID, v.YearlyDays)
 	if err != nil {
 		return nil, err
 	}
@@ -699,13 +699,13 @@ func (m *MariaDB) CreateVaccationRessource(ctx context.Context, v *model.Vaccati
 	return v, nil
 }
 
-func (m *MariaDB) GetVaccationRessourceByID(ctx context.Context, uuid string) (*model.VaccationRessource, error) {
-	row := m.db.QueryRowContext(ctx, vaccationRessourceSelectByID, uuid)
+func (m *MariaDB) GetVacationRessourceByID(ctx context.Context, uuid string) (*model.VacationRessource, error) {
+	row := m.db.QueryRowContext(ctx, vacationRessourceSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
 	}
-	v := &model.VaccationRessource{}
+	v := &model.VacationRessource{}
 	var userID sql.NullString
 	var createdAt, updatedAt, from, to sql.NullTime
 	err = row.Scan(&v.ID, &userID, &createdAt, &updatedAt, &from, &to, v.YearlyDays)
@@ -730,16 +730,16 @@ func (m *MariaDB) GetVaccationRessourceByID(ctx context.Context, uuid string) (*
 	return v, nil
 }
 
-func (m *MariaDB) ListVaccationRessource(ctx context.Context) ([]*model.VaccationRessource, error) {
-	allVaccationRessources := make([]*model.VaccationRessource, 0)
-	rows, err := m.db.QueryContext(ctx, basicVaccationRessourceSelect)
+func (m *MariaDB) ListVacationRessource(ctx context.Context) ([]*model.VacationRessource, error) {
+	allVacationRessources := make([]*model.VacationRessource, 0)
+	rows, err := m.db.QueryContext(ctx, basicVacationRessourceSelect)
 	if err != nil {
 		return nil, err
 	}
 	var userID sql.NullString
 	var createdAt, updatedAt, from, to sql.NullTime
 	for rows.Next() {
-		v := model.VaccationRessource{}
+		v := model.VacationRessource{}
 		err = rows.Scan(&v.ID, &createdAt, &updatedAt, &from, &to, &userID)
 		if err != nil {
 			return nil, err
@@ -756,17 +756,17 @@ func (m *MariaDB) ListVaccationRessource(ctx context.Context) ([]*model.Vaccatio
 		if userID.Valid {
 			v.UserID = userID.String
 		}
-		allVaccationRessources = append(allVaccationRessources, &v)
+		allVacationRessources = append(allVacationRessources, &v)
 	}
-	return allVaccationRessources, nil
+	return allVacationRessources, nil
 }
 
-func (m *MariaDB) UpdateVaccationRessource(ctx context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
+func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
-	_, err = tx.ExecContext(ctx, vaccationRessourceUpdate, v.UserID, v.YearlyDays, v.From, v.To, v.ID)
+	_, err = tx.ExecContext(ctx, vacationRessourceUpdate, v.UserID, v.YearlyDays, v.From, v.To, v.ID)
 	if err != nil {
 		if err := tx.Rollback(); err != nil {
 			return nil, err
@@ -790,8 +790,8 @@ func (m *MariaDB) UpdateVaccationRessource(ctx context.Context, v *model.Vaccati
 	return v, nil
 }
 
-func (m *MariaDB) DeleteVaccationRessource(ctx context.Context, uuid string) error {
-	row := m.db.QueryRowContext(ctx, vaccationRessourceDelete, uuid)
+func (m *MariaDB) DeleteVacationRessource(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vacationRessourceDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err

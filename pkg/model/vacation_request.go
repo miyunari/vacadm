@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type VaccationRequest struct {
+type VacationRequest struct {
 	ID        string     `json:"id"`
 	UserID    string     `json:"user_id"`
 	To        time.Time  `json:"to"`
@@ -12,6 +12,6 @@ type VaccationRequest struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-func (vr VaccationRequest) Copy() *VaccationRequest {
+func (vr VacationRequest) Copy() *VacationRequest {
 	return &vr
 }

@@ -2,17 +2,16 @@ package model
 
 import "time"
 
-type VaccationRessource struct {
+type Vacation struct {
 	ID         string     `json:"id"`
 	UserID     string     `json:"user_id"`
-	YearlyDays int        `json:"yearly_days"`
+	ApprovedBy *User      `json:"approved_by"`
 	From       time.Time  `json:"from"`
 	To         time.Time  `json:"to"`
 	CreatedAt  *time.Time `json:"created_at"`
 	DeletedAt  *time.Time `json:"deleted_at"`
-	UpdatedAt  *time.Time `json:"updated_at"`
 }
 
-func (vr VaccationRessource) Copy() *VaccationRessource {
-	return &vr
+func (v Vacation) Copy() *Vacation {
+	return &v
 }

@@ -1,4 +1,4 @@
-package vaccation
+package vacation
 
 import (
 	"encoding/json"
@@ -10,45 +10,45 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewVaccation(store database.Database, logger logrus.FieldLogger) *vaccation {
-	return &vaccation{
+func NewVacation(store database.Database, logger logrus.FieldLogger) *vacation {
+	return &vacation{
 		store:  store,
-		logger: logger.WithField("component", "vaccation-service"),
+		logger: logger.WithField("component", "vacation-service"),
 	}
 }
 
-type vaccation struct {
+type vacation struct {
 	store  database.Database
 	logger logrus.FieldLogger
 }
 
-func (v *vaccation) GetByID(w http.ResponseWriter, r *http.Request) {
+func (v *vacation) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "read")
-	logger.Info("get vaccation by id")
-	vacID, err := extractVaccationID(r)
+	logger.Info("get vacation by id")
+	vacID, err := extractVacationID(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	vaccation, err := v.store.GetVaccationByID(r.Context(), vacID)
+	vacation, err := v.store.GetVacationByID(r.Context(), vacID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	err = json.NewEncoder(w).Encode(&vaccation)
+	err = json.NewEncoder(w).Encode(&vacation)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	v.logger.Info("get vaccation with id: ", vacID)
+	v.logger.Info("get vacation with id: ", vacID)
 }
 
-func (v *vaccation) List(w http.ResponseWriter, r *http.Request) {
+func (v *vacation) List(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "list")
-	logger.Info("get vaccation list")
-	list, err := v.store.ListVaccations(r.Context())
+	logger.Info("get vacation list")
+	list, err := v.store.ListVacations(r.Context())
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -59,33 +59,33 @@ func (v *vaccation) List(w http.ResponseWriter, r *http.Request) {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	v.logger.Info("get list of vaccations")
+	v.logger.Info("get list of vacations")
 }
 
-func (v *vaccation) Delete(w http.ResponseWriter, r *http.Request) {
+func (v *vacation) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("component", "delete")
-	logger.Info("delete vaccation")
-	vacID, err := extractVaccationID(r)
+	logger.Info("delete vacation")
+	vacID, err := extractVacationID(r)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = v.store.DeleteVaccation(r.Context(), vacID)
+	err = v.store.DeleteVacation(r.Context(), vacID)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	v.logger.Info("delete vaccation with id: ", vacID)
+	v.logger.Info("delete vacation with id: ", vacID)
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func extractVaccationID(r *http.Request) (string, error) {
+func extractVacationID(r *http.Request) (string, error) {
 	vars := mux.Vars(r)
-	vaccationID, ok := vars["vaccationID"]
+	vacationID, ok := vars["vacationID"]
 	if !ok {
-		return "", errors.New("could not extract vaccationID")
+		return "", errors.New("could not extract vacationID")
 	}
-	return vaccationID, nil
+	return vacationID, nil
 }

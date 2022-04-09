@@ -15,9 +15,9 @@ func NewInmemoryDB() *InmemoryDB {
 	return &InmemoryDB{
 		userStore:               make([]*model.User, 0),
 		teamStore:               make([]*model.Team, 0),
-		vaccationStore:          make([]*model.Vaccation, 0),
-		vaccationRequestStore:   make([]*model.VaccationRequest, 0),
-		vaccationRessourceStore: make([]*model.VaccationRessource, 0),
+		vacationStore:          make([]*model.Vacation, 0),
+		vacationRequestStore:   make([]*model.VacationRequest, 0),
+		vacationRessourceStore: make([]*model.VacationRessource, 0),
 		logger:                  logrus.New().WithField("component", "inmemoryDB"),
 	}
 }
@@ -25,9 +25,9 @@ func NewInmemoryDB() *InmemoryDB {
 type InmemoryDB struct {
 	userStore               []*model.User
 	teamStore               []*model.Team
-	vaccationStore          []*model.Vaccation
-	vaccationRequestStore   []*model.VaccationRequest
-	vaccationRessourceStore []*model.VaccationRessource
+	vacationStore          []*model.Vacation
+	vacationRequestStore   []*model.VacationRequest
+	vacationRessourceStore []*model.VacationRessource
 	logger                  logrus.FieldLogger
 }
 
@@ -181,118 +181,118 @@ func (i *InmemoryDB) DeleteTeam(_ context.Context, id string) error {
 	return errors.New("team didn't exist")
 }
 
-func (i *InmemoryDB) GetVaccationByID(_ context.Context, id string) (*model.Vaccation, error) {
-	for _, s := range i.vaccationStore {
+func (i *InmemoryDB) GetVacationByID(_ context.Context, id string) (*model.Vacation, error) {
+	for _, s := range i.vacationStore {
 		if s.ID == id {
-			i.logger.Info("get vaccation with id: ", id)
+			i.logger.Info("get vacation with id: ", id)
 			return s.Copy(), nil
 		}
 	}
-	i.logger.Error("no vaccation found")
-	return nil, errors.New("no vaccation found")
+	i.logger.Error("no vacation found")
+	return nil, errors.New("no vacation found")
 }
 
-func (i *InmemoryDB) ListVaccations(_ context.Context) ([]*model.Vaccation, error) {
-	i.logger.Info("get list of vaccations")
-	return i.vaccationStore, nil
+func (i *InmemoryDB) ListVacations(_ context.Context) ([]*model.Vacation, error) {
+	i.logger.Info("get list of vacations")
+	return i.vacationStore, nil
 }
 
-func (i *InmemoryDB) DeleteVaccation(_ context.Context, id string) error {
-	for x, vaccation := range i.vaccationStore {
-		if vaccation.ID == id {
-			i.logger.Info("delete vaccation with id: ", vaccation.ID)
-			i.vaccationStore = append(i.vaccationStore[:x], i.vaccationStore[x+1:]...)
+func (i *InmemoryDB) DeleteVacation(_ context.Context, id string) error {
+	for x, vacation := range i.vacationStore {
+		if vacation.ID == id {
+			i.logger.Info("delete vacation with id: ", vacation.ID)
+			i.vacationStore = append(i.vacationStore[:x], i.vacationStore[x+1:]...)
 			return nil
 		}
 	}
-	i.logger.Error("vaccation didn't exist")
-	return errors.New("vaccation didn't exist")
+	i.logger.Error("vacation didn't exist")
+	return errors.New("vacation didn't exist")
 }
 
-func (i *InmemoryDB) CreateVaccationRequest(_ context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
+func (i *InmemoryDB) CreateVacationRequest(_ context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
 	vCopy := v.Copy()
 
-	i.logger.Info("create vaccation-request with id: ", v.ID)
-	i.vaccationRequestStore = append(i.vaccationRequestStore, vCopy)
+	i.logger.Info("create vacation-request with id: ", v.ID)
+	i.vacationRequestStore = append(i.vacationRequestStore, vCopy)
 	return v, nil
 }
 
-func (i *InmemoryDB) GetVaccationRequestByID(_ context.Context, id string) (*model.VaccationRequest, error) {
-	for _, s := range i.vaccationRequestStore {
+func (i *InmemoryDB) GetVacationRequestByID(_ context.Context, id string) (*model.VacationRequest, error) {
+	for _, s := range i.vacationRequestStore {
 		if s.ID == id {
-			i.logger.Info("get vaccation-request with id: ", id)
+			i.logger.Info("get vacation-request with id: ", id)
 			return s.Copy(), nil
 		}
 	}
-	i.logger.Error("no vaccation-request found")
-	return nil, errors.New("no vaccation-request found")
+	i.logger.Error("no vacation-request found")
+	return nil, errors.New("no vacation-request found")
 }
 
-func (i *InmemoryDB) ListVaccationRequests(_ context.Context) ([]*model.VaccationRequest, error) {
-	i.logger.Info("get list of vaccation-requests")
-	return i.vaccationRequestStore, nil
+func (i *InmemoryDB) ListVacationRequests(_ context.Context) ([]*model.VacationRequest, error) {
+	i.logger.Info("get list of vacation-requests")
+	return i.vacationRequestStore, nil
 }
 
-func (i *InmemoryDB) UpdateVaccationRequest(_ context.Context, v *model.VaccationRequest) (*model.VaccationRequest, error) {
-	i.logger.Error("update failed: no update on vaccation-request possible")
-	return nil, errors.New("update failed: no update on vaccation-request possible")
+func (i *InmemoryDB) UpdateVacationRequest(_ context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
+	i.logger.Error("update failed: no update on vacation-request possible")
+	return nil, errors.New("update failed: no update on vacation-request possible")
 }
 
-func (i *InmemoryDB) DeleteVaccationRequest(_ context.Context, id string) error {
-	for x, vaccationRequest := range i.vaccationRequestStore {
-		if vaccationRequest.ID == id {
-			i.logger.Info("delete vaccation-request with id: ", vaccationRequest.ID)
-			i.vaccationRequestStore = append(i.vaccationRequestStore[:x], i.vaccationRequestStore[x+1:]...)
+func (i *InmemoryDB) DeleteVacationRequest(_ context.Context, id string) error {
+	for x, vacationRequest := range i.vacationRequestStore {
+		if vacationRequest.ID == id {
+			i.logger.Info("delete vacation-request with id: ", vacationRequest.ID)
+			i.vacationRequestStore = append(i.vacationRequestStore[:x], i.vacationRequestStore[x+1:]...)
 			return nil
 		}
 	}
-	i.logger.Error("vaccation-request didn't exist")
-	return errors.New("vaccation-request didn't exist")
+	i.logger.Error("vacation-request didn't exist")
+	return errors.New("vacation-request didn't exist")
 }
 
-func (i *InmemoryDB) CreateVaccationRessource(_ context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
+func (i *InmemoryDB) CreateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
 	vCopy := v.Copy()
 
-	i.logger.Info("create vaccation-ressource with id: ", v.ID)
-	i.vaccationRessourceStore = append(i.vaccationRessourceStore, vCopy)
+	i.logger.Info("create vacation-ressource with id: ", v.ID)
+	i.vacationRessourceStore = append(i.vacationRessourceStore, vCopy)
 	return v, nil
 }
 
-func (i *InmemoryDB) GetVaccationRessourceByID(_ context.Context, id string) (*model.VaccationRessource, error) {
-	for _, s := range i.vaccationRessourceStore {
+func (i *InmemoryDB) GetVacationRessourceByID(_ context.Context, id string) (*model.VacationRessource, error) {
+	for _, s := range i.vacationRessourceStore {
 		if s.ID == id {
-			i.logger.Info("get vaccation-ressource with id: ", id)
+			i.logger.Info("get vacation-ressource with id: ", id)
 			return s.Copy(), nil
 		}
 	}
-	i.logger.Error("no vaccation-ressource found")
-	return nil, errors.New("no vaccation-ressource found")
+	i.logger.Error("no vacation-ressource found")
+	return nil, errors.New("no vacation-ressource found")
 }
 
-func (i *InmemoryDB) ListVaccationRessource(_ context.Context) ([]*model.VaccationRessource, error) {
-	i.logger.Info("get list of vaccation-ressource")
-	return i.vaccationRessourceStore, nil
+func (i *InmemoryDB) ListVacationRessource(_ context.Context) ([]*model.VacationRessource, error) {
+	i.logger.Info("get list of vacation-ressource")
+	return i.vacationRessourceStore, nil
 }
 
-func (i *InmemoryDB) UpdateVaccationRessource(_ context.Context, v *model.VaccationRessource) (*model.VaccationRessource, error) {
-	i.logger.Error("update failed: no update on vaccation-ressource possible")
-	return nil, errors.New("update failed: no update on vaccation-ressource possible")
+func (i *InmemoryDB) UpdateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
+	i.logger.Error("update failed: no update on vacation-ressource possible")
+	return nil, errors.New("update failed: no update on vacation-ressource possible")
 }
 
-func (i *InmemoryDB) DeleteVaccationRessource(_ context.Context, id string) error {
-	for x, vaccationRessource := range i.vaccationRessourceStore {
-		if vaccationRessource.ID == id {
-			i.logger.Info("delete vaccation-ressource with id: ", vaccationRessource.ID)
-			i.vaccationRessourceStore = append(i.vaccationRessourceStore[:x], i.vaccationRessourceStore[x+1:]...)
+func (i *InmemoryDB) DeleteVacationRessource(_ context.Context, id string) error {
+	for x, vacationRessource := range i.vacationRessourceStore {
+		if vacationRessource.ID == id {
+			i.logger.Info("delete vacation-ressource with id: ", vacationRessource.ID)
+			i.vacationRessourceStore = append(i.vacationRessourceStore[:x], i.vacationRessourceStore[x+1:]...)
 			return nil
 		}
 	}
-	i.logger.Error("vaccation-ressource didn't exist")
-	return errors.New("vaccation-ressource didn't exist")
+	i.logger.Error("vacation-ressource didn't exist")
+	return errors.New("vacation-ressource didn't exist")
 }
