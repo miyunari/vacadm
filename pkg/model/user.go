@@ -48,5 +48,4 @@ func (u *User) Copy() *User {
 		DeletedAt: deletedAt,
 		UpdatedAt: updatedAt,
 	}
-
 }

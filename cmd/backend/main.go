@@ -32,9 +32,10 @@ func main() {
 		initRoot = flag.Bool("init.root", true, "create root user on startup")
 		address  = flag.String("address", "localhost:8080", "ip:port")
 		// TODO: remove weak default secret
-		jwtKey       = flag.String("secret", "my-secret", "secret for jwt token")
-		sqlConnStr   = flag.String("sql.conn", "", "sql connection str. user:password@/dbname example: root:my-secret-pw@(127.0.0.1:3306)/test?parseTime=true")
-		srvTimeout   = flag.Duration("timeout", 30*time.Second, "server timeout")
+		jwtKey     = flag.String("secret", "my-secret", "secret for jwt token")
+		sqlConnStr = flag.String("sql.conn", "", `sql connection str. user:password@/dbname
+		example: root:my-secret-pw@(127.0.0.1:3306)/test?parseTime=true`)
+		srvTimeout   = flag.Duration("timeout", time.Minute, "server timeout")
 		smtpHost     = flag.String("smtp.host", "", "address of smtp server")
 		smtpPort     = flag.String("smtp.port", "", "port of smtp server")
 		smtpUser     = flag.String("smtp.user", "", "smtp user mail address")

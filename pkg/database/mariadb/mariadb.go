@@ -313,8 +313,8 @@ func (m *MariaDB) UpdateUser(ctx context.Context, u *model.User) (*model.User, e
 	}
 	_, err = tx.ExecContext(ctx, userUpdate, u.ParentID, u.TeamID, u.FirstName, u.LastName, u.Email, u.ID)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -322,8 +322,8 @@ func (m *MariaDB) UpdateUser(ctx context.Context, u *model.User) (*model.User, e
 	var updatedAt time.Time
 	err = row.Scan(&updatedAt)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -448,8 +448,8 @@ func (m *MariaDB) UpdateTeam(ctx context.Context, t *model.Team) (*model.Team, e
 	}
 	_, err = tx.ExecContext(ctx, teamUpdate, t.OwnerID, t.Name, t.ID)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -457,8 +457,8 @@ func (m *MariaDB) UpdateTeam(ctx context.Context, t *model.Team) (*model.Team, e
 	var updatedAt time.Time
 	err = row.Scan(&updatedAt)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -506,7 +506,7 @@ func (m *MariaDB) GetVacationByID(ctx context.Context, uuid string) (*model.Vaca
 		v.UserID = userID.String
 	}
 	if approvedID.Valid {
-		v.ApprovedBy.ID = approvedID.String
+		v.ApprovedBy = &approvedID.String
 	}
 	return v, nil
 }
@@ -539,7 +539,7 @@ func (m *MariaDB) ListVacations(ctx context.Context) ([]*model.Vacation, error) 
 			v.UserID = userID.String
 		}
 		if approvedID.Valid {
-			v.ApprovedBy.ID = approvedID.String
+			v.ApprovedBy = &approvedID.String
 		}
 		allVacations = append(allVacations, &v)
 	}
@@ -647,8 +647,8 @@ func (m *MariaDB) UpdateVacationRequest(ctx context.Context, v *model.VacationRe
 	}
 	_, err = tx.ExecContext(ctx, vacationRequestUpdate, v.UserID, v.From, v.To, v.ID)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -656,8 +656,8 @@ func (m *MariaDB) UpdateVacationRequest(ctx context.Context, v *model.VacationRe
 	var updatedAt time.Time
 	err = row.Scan(&updatedAt)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -768,8 +768,8 @@ func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.Vacation
 	}
 	_, err = tx.ExecContext(ctx, vacationRessourceUpdate, v.UserID, v.YearlyDays, v.From, v.To, v.ID)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}
@@ -777,8 +777,8 @@ func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.Vacation
 	var updatedAt time.Time
 	err = row.Scan(&updatedAt)
 	if err != nil {
-		if err := tx.Rollback(); err != nil {
-			return nil, err
+		if errTX := tx.Rollback(); err != nil {
+			return nil, errTX
 		}
 		return nil, err
 	}

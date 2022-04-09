@@ -44,13 +44,13 @@ func (t *Tokenizer) Generate(u *model.User) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(t.hmacSecret)
 }
 
-func (t *Tokenizer) Valid(token string) (string, string, error) {
+func (t *Tokenizer) Valid(token string) (userID, teamID string, err error) {
 	claims := &UserClaims{}
 	// Parse the JWT string and store the result in `claims`.
 	// Note that we are passing the key in this method as well. This method will
 	// return an error if the token is invalid (if it has expired according to
 	// the expiry time we set on sign in), or if the signature does not match
-	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err = jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return t.hmacSecret, nil
 	})
 	return claims.UserID, claims.TeamID, err

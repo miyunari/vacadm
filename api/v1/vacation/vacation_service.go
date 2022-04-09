@@ -61,7 +61,7 @@ func (v *vacation) List(w http.ResponseWriter, r *http.Request) {
 		for _, l := range list {
 			approvedBy := ""
 			if l.ApprovedBy != nil {
-				approvedBy = l.ApprovedBy.ID
+				approvedBy = *l.ApprovedBy
 			}
 			var createdAt string
 			if l.CreatedAt != nil {

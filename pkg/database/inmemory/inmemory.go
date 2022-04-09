@@ -13,22 +13,22 @@ import (
 
 func NewInmemoryDB() *InmemoryDB {
 	return &InmemoryDB{
-		userStore:               make([]*model.User, 0),
-		teamStore:               make([]*model.Team, 0),
+		userStore:              make([]*model.User, 0),
+		teamStore:              make([]*model.Team, 0),
 		vacationStore:          make([]*model.Vacation, 0),
 		vacationRequestStore:   make([]*model.VacationRequest, 0),
 		vacationRessourceStore: make([]*model.VacationRessource, 0),
-		logger:                  logrus.New().WithField("component", "inmemoryDB"),
+		logger:                 logrus.New().WithField("component", "inmemoryDB"),
 	}
 }
 
 type InmemoryDB struct {
-	userStore               []*model.User
-	teamStore               []*model.Team
+	userStore              []*model.User
+	teamStore              []*model.Team
 	vacationStore          []*model.Vacation
 	vacationRequestStore   []*model.VacationRequest
 	vacationRessourceStore []*model.VacationRessource
-	logger                  logrus.FieldLogger
+	logger                 logrus.FieldLogger
 }
 
 func (i *InmemoryDB) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
@@ -87,16 +87,17 @@ func (i *InmemoryDB) ListUsers(_ context.Context) ([]*model.User, error) {
 func (i *InmemoryDB) UpdateUser(_ context.Context, user *model.User) (*model.User, error) {
 	updatededAt := time.Now()
 	for x := 0; x < len(i.userStore); x++ {
-		if i.userStore[x].ID == user.ID {
-			if user.Email != "" {
-				i.userStore[x].Email = user.Email
-			}
-			i.userStore[x].FirstName = user.FirstName
-			i.userStore[x].LastName = user.LastName
-			i.userStore[x].UpdatedAt = &updatededAt
-			i.logger.Info("update user with id: ", user.ID)
-			return i.userStore[x], nil
+		if i.userStore[x].ID != user.ID {
+			continue
 		}
+		if user.Email != "" {
+			i.userStore[x].Email = user.Email
+		}
+		i.userStore[x].FirstName = user.FirstName
+		i.userStore[x].LastName = user.LastName
+		i.userStore[x].UpdatedAt = &updatededAt
+		i.logger.Info("update user with id: ", user.ID)
+		return i.userStore[x], nil
 	}
 	i.logger.Error("update failed: no user found")
 	return nil, errors.New("update failed: no user found")
