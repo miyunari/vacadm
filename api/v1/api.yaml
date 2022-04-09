@@ -4,7 +4,7 @@ info:
   description: REST-API Spezifikation
   version: 0.0.1
 servers:
-  - url: http://localhost:8080/
+  - url: http://localhost:8080/v1
     description: ""
 security:
   - BearerAuth: []
