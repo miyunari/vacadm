@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	"github.com/MninaTB/vacadm/api/token"
 	v1 "github.com/MninaTB/vacadm/api/v1"
 	"github.com/MninaTB/vacadm/assets/swagger"
 	"github.com/MninaTB/vacadm/pkg/database"
@@ -65,13 +66,14 @@ func main() {
 		notifier = notify.NewMailer(*smtpHost, *smtpPort, *smtpUser, *smtpPassword, db)
 	}
 
+	router := mux.NewRouter()
 	secret := []byte(*jwtKey)
 	if len(secret) == 0 {
 		logger.Fatal("missing jwt secret")
 	}
 	t := jwt.NewTokenizer(secret, 365*24*time.Hour)
+	router.Path("/token/new/{userID}").Methods(http.MethodGet).HandlerFunc(token.NewTokenService(db, t).Refresh)
 	apiv1 := v1.NewServer(db, notifier, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
-	router := mux.NewRouter()
 	const pathPrefixV1 = "/v1"
 	router.Handle(fmt.Sprintf("%s/{dummy}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
 
@@ -93,11 +95,11 @@ func main() {
 		if err != nil {
 			logger.Fatalln(err)
 		}
-		token, err := t.Generate(u)
+		rootToken, err := t.Generate(u)
 		if err != nil {
 			logger.Fatalln(err)
 		}
-		logger.Info("admin token is: ", token)
+		logger.Info("admin token is: ", rootToken)
 	}
 
 	server := &http.Server{

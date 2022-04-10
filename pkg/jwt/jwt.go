@@ -23,9 +23,15 @@ type Tokenizer struct {
 
 func (t *Tokenizer) Generate(u *model.User) (string, error) {
 	now := time.Now().UTC()
+	teamID := ""
+	if u.TeamID != nil {
+		teamID = *u.TeamID
+	}
 	claims := &UserClaims{
 		// Refers to model.User
 		UserID: u.ID,
+		// Refers to model.Team
+		TeamID: teamID,
 		// https://tools.ietf.org/html/rfc7519#section-4.1
 		StandardClaims: jwt.StandardClaims{
 			// The "iat" (issued at) claim identifies the time at which the JWT was
