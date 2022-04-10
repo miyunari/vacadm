@@ -156,7 +156,25 @@ func (v *vacationRequest) Approve(w http.ResponseWriter, r *http.Request) {
 		To:         vR.To,
 	}
 
+	parent, err := v.store.GetUserByID(r.Context(), parentID)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	vac, err := v.store.CreateVacation(r.Context(), vacation)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	msg := fmt.Sprintf(
+		"your vacation request '%s', from: %s, to: %s got approved by: %s %s",
+		vrID, vR.From.String(), vR.To.String(), parent.FirstName, parent.LastName,
+	)
+	err = v.notifier.NotifyUser(r.Context(), userID, msg)
 	if err != nil {
 		logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
