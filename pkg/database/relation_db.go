@@ -2,12 +2,18 @@ package database
 
 import "context"
 
+// RelationDB is implemented by any structure providing all RelationDB methods.
 type RelationDB interface {
+	// IsParentUser verifies if the given parentID is parent of userID in some form.
 	IsParentUser(ctx context.Context, userID, parentID string) (bool, error)
+	// IsTeamMember verifies if the given userID belongs to teamID.
 	IsTeamMember(ctx context.Context, teamID, userID string) (bool, error)
+	// IsTeamOwner verifies if the given userID refers to an owner of the teamID.
 	IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error)
 }
 
+// NewRelationDB returns initialized RelationDB that matches
+// the RelationDB interface.
 func NewRelationDB(db Database) RelationDB {
 	return &relationDB{
 		db: db,
@@ -18,6 +24,7 @@ type relationDB struct {
 	db Database
 }
 
+// IsParentUser verifies if the given parentID is parent of userID in some form.
 func (r *relationDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
 	u, err := r.db.GetUserByID(ctx, userID)
 	if err != nil {
@@ -37,6 +44,7 @@ func (r *relationDB) IsParentUser(ctx context.Context, userID, parentID string) 
 	return false, nil
 }
 
+// IsTeamMember verifies if the given userID belongs to teamID.
 func (r *relationDB) IsTeamMember(ctx context.Context, teamID, userID string) (bool, error) {
 	u, err := r.db.GetUserByID(ctx, userID)
 	if err != nil {
@@ -48,6 +56,7 @@ func (r *relationDB) IsTeamMember(ctx context.Context, teamID, userID string) (b
 	return *u.TeamID == teamID, nil
 }
 
+// IsTeamOwner verifies if the given userID refers to an owner of the teamID.
 func (r *relationDB) IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error) {
 	t, err := r.db.GetTeamByID(ctx, teamID)
 	if err != nil {
