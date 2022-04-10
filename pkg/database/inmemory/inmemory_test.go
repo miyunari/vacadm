@@ -357,3 +357,371 @@ func TestInmemoryDB_DeleteUser(t *testing.T) {
 		})
 	}
 }
+
+func TestInmemoryDB_CreateTeam(t *testing.T) {
+	tt := []struct {
+		name      string
+		team      *model.Team
+		userStore []*model.User
+		teamStore []*model.Team
+		teamCount int
+		wantErr   bool
+	}{
+		{
+			name: "owner not found",
+			team: &model.Team{
+				OwnerID: "owner-not-found",
+				Name:    "A-Team",
+			},
+			teamCount: 0,
+			wantErr:   true,
+		},
+		{
+			name: "owner not found",
+			userStore: []*model.User{
+				{
+					ID: "owner-found",
+				},
+			},
+			team: &model.Team{
+				OwnerID: "owner-found",
+				Name:    "A-Team",
+			},
+			teamCount: 1,
+			wantErr:   false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			db := NewInmemoryDB()
+			if tc.userStore != nil {
+				db.userStore = tc.userStore
+			}
+			if tc.teamStore != nil {
+				db.teamStore = tc.teamStore
+			}
+			newTeam, err := db.CreateTeam(context.Background(), tc.team)
+			if err != nil && !tc.wantErr {
+				t.Fatal(err)
+			} else if err != nil && tc.wantErr {
+				return
+			}
+
+			if tc.teamCount != len(db.teamStore) {
+				t.Fatalf("invalid number of teams in store, want: %d, got: %d",
+					tc.teamCount, len(db.teamStore),
+				)
+			}
+
+			// NOTE: check if uuid is set
+			_, err = uuid.Parse(newTeam.ID)
+			if err != nil {
+				t.Error(err)
+			}
+
+			// NOTE: check if createdAt timestamp is set
+			if newTeam.CreatedAt == nil {
+				t.Error("missing timestamp created_at")
+			}
+
+			ignoreFields := cmp.FilterPath(func(p cmp.Path) bool {
+				return strings.Contains(p.String(), "ID") ||
+					strings.Contains(p.String(), "CreatedAt")
+			}, cmp.Ignore())
+
+			// NOTE: compare original struct, ignore ID and CreatedAt (should be different)
+			if !cmp.Equal(tc.team, newTeam, ignoreFields) {
+				t.Fatal(cmp.Diff(tc.team, newTeam, ignoreFields))
+			}
+		})
+	}
+}
+
+func TestInmemoryDB_GetTeamByID(t *testing.T) {
+	tt := []struct {
+		name      string
+		teamID    string
+		teamStore []*model.Team
+		expect    *model.Team
+		wantErr   bool
+	}{
+		{
+			name:    "team does not exist",
+			teamID:  "does-not-exist",
+			wantErr: true,
+		},
+		{
+			name: "get team by id as expected",
+			teamStore: []*model.Team{
+				{
+					ID:   "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+					Name: "A-Team",
+				},
+			},
+			teamID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+			expect: &model.Team{
+				ID:   "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+				Name: "A-Team",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			db := NewInmemoryDB()
+			if tc.teamStore != nil {
+				db.teamStore = tc.teamStore
+			}
+			newTeam, err := db.GetTeamByID(context.Background(), tc.teamID)
+			if err != nil && !tc.wantErr {
+				t.Fatal(err)
+			} else if err != nil && tc.wantErr {
+				return
+			}
+
+			if !cmp.Equal(tc.expect, newTeam) {
+				t.Fatal(cmp.Diff(tc.expect, newTeam))
+			}
+		})
+	}
+}
+
+func TestInmemoryDB_ListTeams(t *testing.T) {
+	tt := []struct {
+		name      string
+		teamStore []*model.Team
+		wantErr   bool
+	}{
+		{
+			name:    "empty store",
+			wantErr: false,
+		},
+		{
+			name: "list users as expected",
+			teamStore: []*model.Team{
+				{
+					ID:   "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+					Name: "A-Team",
+				},
+				{
+					ID:   "fed75474-29df-4d99-a792-09f0bf7ae848",
+					Name: "B-Team",
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			db := NewInmemoryDB()
+			if tc.teamStore != nil {
+				db.teamStore = tc.teamStore
+			}
+			teams, err := db.ListTeams(context.Background())
+			if err != nil && !tc.wantErr {
+				t.Fatal(err)
+			} else if err != nil && tc.wantErr {
+				return
+			}
+
+			if !cmp.Equal(db.teamStore, teams) {
+				t.Fatal(cmp.Diff(db.teamStore, teams))
+			}
+		})
+	}
+}
+
+func TestInmemoryDB_ListTeamUsers(t *testing.T) {
+	tt := []struct {
+		name        string
+		teamID      string
+		userStore   []*model.User
+		teamStore   []*model.Team
+		expectUsers int
+		wantErr     bool
+	}{
+		{
+			name:        "empty store",
+			expectUsers: 0,
+			wantErr:     false,
+		},
+		{
+			name:        "list users as expected",
+			expectUsers: 2,
+			teamStore: []*model.Team{
+				{
+					ID: "d4ee305c-18cc-4f1e-a752-764b6913ab67",
+				},
+			},
+			teamID: "d4ee305c-18cc-4f1e-a752-764b6913ab67",
+			userStore: []*model.User{
+				{
+					ID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+					TeamID: func() *string {
+						tmp := "d4ee305c-18cc-4f1e-a752-764b6913ab67"
+						return &tmp
+					}(),
+					FirstName: "firstname-one",
+					LastName:  "lastname-one",
+					Email:     "one@inform.de",
+				},
+				{
+					ID: "fed75474-29df-4d99-a792-09f0bf7ae848",
+					TeamID: func() *string {
+						tmp := "d4ee305c-18cc-4f1e-a752-764b6913ab67"
+						return &tmp
+					}(),
+					FirstName: "firstname-two",
+					LastName:  "lastname-two",
+					Email:     "two@inform.de",
+				},
+				{
+					ID:        "23ebe54c-2d91-4a00-8e13-6b12a1a47000",
+					FirstName: "firstname-other-team",
+					LastName:  "lastname-other-team",
+					Email:     "other@inform.de",
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			db := NewInmemoryDB()
+			if tc.userStore != nil {
+				db.userStore = tc.userStore
+			}
+			if tc.teamStore != nil {
+				db.teamStore = tc.teamStore
+			}
+			users, err := db.ListTeamUsers(context.Background(), tc.teamID)
+			if err != nil && !tc.wantErr {
+				t.Fatal(err)
+			} else if err != nil && tc.wantErr {
+				return
+			}
+
+			if tc.expectUsers != len(users) {
+				t.Fatalf("invalid number of users, want: %d, got: %d", tc.expectUsers, len(users))
+			}
+		})
+	}
+}
+
+func TestInmemoryDB_UpdateTeam(t *testing.T) {
+	tt := []struct {
+		name      string
+		team      *model.Team
+		teamStore []*model.Team
+		wantErr   bool
+	}{
+		{
+			name: "team does not exist",
+			team: &model.Team{
+				Name: "team-update",
+			},
+			wantErr: true,
+		},
+		{
+			name: "update expected",
+			teamStore: []*model.Team{
+				{
+					ID:   "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+					Name: "team-existing",
+				},
+			},
+			team: &model.Team{
+				ID:   "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+				Name: "team-new",
+			},
+			wantErr: false,
+		},
+		{
+			name: "update team but owner does not exist",
+			team: &model.Team{
+				OwnerID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+				Name:    "owner-missing",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			db := NewInmemoryDB()
+			if tc.teamStore != nil {
+				db.teamStore = tc.teamStore
+			}
+			newTeam, err := db.UpdateTeam(context.Background(), tc.team)
+			if err != nil && !tc.wantErr {
+				t.Fatal(err)
+			} else if err != nil && tc.wantErr {
+				return
+			}
+
+			// NOTE: check if createdAt timestamp is set
+			if newTeam.UpdatedAt == nil {
+				t.Error("missing timestamp updated_at")
+			}
+
+			ignoreFields := cmp.FilterPath(func(p cmp.Path) bool {
+				return strings.Contains(p.String(), "UpdatedAt")
+			}, cmp.Ignore())
+
+			// NOTE: compare original struct, ignore ID and CreatedAt (should be different)
+			if !cmp.Equal(tc.team, newTeam, ignoreFields) {
+				t.Fatal(cmp.Diff(tc.team, newTeam, ignoreFields))
+			}
+		})
+	}
+}
+
+func TestInmemoryDB_DeleteTeam(t *testing.T) {
+	tt := []struct {
+		name      string
+		teamID    string
+		teamStore []*model.Team
+		wantErr   bool
+	}{
+		{
+			name:    "team does not exist",
+			teamID:  "does-not-exist",
+			wantErr: true,
+		},
+		{
+			name:   "get user by id as expected",
+			teamID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+			teamStore: []*model.Team{
+				{
+					ID:   "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+					Name: "A-Team",
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			db := NewInmemoryDB()
+			if tc.teamStore != nil {
+				db.teamStore = tc.teamStore
+			}
+			expectCount := len(tc.teamStore) - 1
+			err := db.DeleteTeam(context.Background(), tc.teamID)
+			if err != nil && !tc.wantErr {
+				t.Fatal(err)
+			} else if err != nil && tc.wantErr {
+				return
+			}
+
+			if expectCount != len(db.userStore) {
+				t.Fatalf("invalid count, want: %d, got: %d", expectCount, len(db.teamStore))
+			}
+		})
+	}
+}

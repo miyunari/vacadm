@@ -173,9 +173,27 @@ func (i *InmemoryDB) DeleteUser(_ context.Context, id string) error {
 
 // CreateTeam stores an internal copy of the given team.
 // Returns copy with assigned teamID.
-func (i *InmemoryDB) CreateTeam(_ context.Context, team *model.Team) (*model.Team, error) {
+func (i *InmemoryDB) CreateTeam(ctx context.Context, team *model.Team) (*model.Team, error) {
 	i.muTeamStore.Lock()
 	defer i.muTeamStore.Unlock()
+
+	if team.OwnerID == "" {
+		return nil, fmt.Errorf("missing ownerID")
+	}
+	users, err := i.ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var found bool
+	for _, u := range users {
+		if u.ID == team.OwnerID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("missing user with id: '%s'", team.OwnerID)
+	}
 	createdAt := time.Now()
 	team.CreatedAt = &createdAt
 	team.ID = uuid.NewString()
