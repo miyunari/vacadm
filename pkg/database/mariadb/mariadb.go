@@ -3,7 +3,6 @@ package mariadb
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -17,13 +16,13 @@ const (
 			id, parent_id,
 			team_id, email,
 			firstname, lastname,
-			created_at, updated_at
+			created_at
 		)
 		VALUES (
 			UUID(), ?,
 			?, ?,
 			?, ?,
-			NOW(), NOW()
+			NOW()
 		) RETURNING id, created_at
 	`
 
@@ -63,12 +62,12 @@ const (
 		INSERT INTO team (
 			id,
 			owner_id, name,
-			created_at, updated_at
+			created_at
 		)
 		VALUES (
 			UUID(),
 			?, ?,
-			NOW(), NOW()
+			NOW()
 		)RETURNING id, created_at
 	`
 
@@ -105,6 +104,19 @@ const (
 		WHERE id = ?
 	`
 
+	vacationCreate = `
+	INSERT INTO vacation (
+		id, user_id,
+		from, to,
+		created_at
+	)
+	VALUES (
+		UUID(), ?
+		?, ?
+		NOW()
+	) RETURNING id, created_at
+`
+
 	basicVacationSelect = `
 		SELECT
 			id,
@@ -127,15 +139,15 @@ const (
 	`
 
 	vacationRequestCreate = `
-		INSERT INTO user (
+		INSERT INTO vaccation_request (
 			id, user_id,
 			from, to,
-			created_at, updated_at
+			created_at
 		)
 		VALUES (
 			UUID(), ?
-			NOW(), NOW()
-			NOW(), NOW()
+			?, ?
+			NOW()
 		) RETURNING id, created_at
 	`
 
@@ -170,15 +182,15 @@ const (
 	`
 
 	vacationRessourceCreate = `
-		INSERT INTO user (
+		INSERT INTO vacation_ressource (
 			id,
 			user_id, yearly_days,
-			created_at, updated_at
+			created_at
 		)
 		VALUES (
 			UUID(),
 			?, ?
-			NOW(), NOW()
+			NOW()
 		) RETURNING id, created_at
 	`
 
@@ -499,8 +511,27 @@ func (m *MariaDB) DeleteTeam(ctx context.Context, uuid string) error {
 
 // CreateVacation stores an internal copy of the given vacation resource.
 // Returns copy with assigned vacationID.
-func (m *MariaDB) CreateVacation(ctx context.Context, vacation *model.Vacation) (*model.Vacation, error) {
-	return nil, fmt.Errorf("not implemented yet")
+func (m *MariaDB) CreateVacation(ctx context.Context, v *model.Vacation) (*model.Vacation, error) {
+	row, err := m.db.QueryContext(ctx, vacationCreate, v.UserID, v.ApprovedBy, v.From, v.To)
+	if err != nil {
+		return nil, err
+	}
+	err = row.Err()
+	if err != nil {
+		return nil, err
+	}
+	var id string
+	var createdAt, from, to time.Time
+	row.Next()
+	err = row.Scan(&id, &createdAt, &from, &to)
+	if err != nil {
+		return nil, err
+	}
+	v.ID = id
+	v.CreatedAt = &createdAt
+	v.From = from
+	v.To = to
+	return v, nil
 }
 
 // GetVacationByID returns the associated vacation by the given id.
