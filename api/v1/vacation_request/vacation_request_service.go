@@ -16,16 +16,18 @@ import (
 
 func NewVacationRequest(store database.Database, notifier notify.Notifier, logger logrus.FieldLogger) *vacationRequest {
 	return &vacationRequest{
-		store:    store,
-		notifier: notifier,
-		logger:   logger.WithField("component", "vacation-request-service"),
+		store:         store,
+		relationStore: database.NewRelationDB(store),
+		notifier:      notifier,
+		logger:        logger.WithField("component", "vacation-request-service"),
 	}
 }
 
 type vacationRequest struct {
-	store    database.Database
-	notifier notify.Notifier
-	logger   logrus.FieldLogger
+	store         database.Database
+	relationStore database.RelationDB
+	notifier      notify.Notifier
+	logger        logrus.FieldLogger
 }
 
 func (v *vacationRequest) Create(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +98,76 @@ func (v *vacationRequest) GetByID(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	v.logger.Info("get vacation-request with id: ", vR)
+}
+
+func (v *vacationRequest) Approve(w http.ResponseWriter, r *http.Request) {
+	logger := v.logger.WithField("component", "approve")
+	vrID, err := extractVacationRequestID(r)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	vR, err := v.store.GetVacationRequestByID(r.Context(), vrID)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	userID, err := util.UserIDFromRequest(r)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	parentID, err := util.ParentIDFromRequest(r)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	logger = logger.WithFields(logrus.Fields{
+		"vac-request": vrID,
+		"parentID":    parentID,
+		"userID":      userID,
+	})
+
+	ok, err := v.relationStore.IsParentUser(r.Context(), userID, parentID)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		logger.Error("missing permission - can not approve")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	logger.Info("approve vacation-request")
+	vacation := &model.Vacation{
+		UserID:     vR.UserID,
+		ApprovedBy: &parentID,
+		From:       vR.From,
+		To:         vR.To,
+	}
+
+	vac, err := v.store.CreateVacation(r.Context(), vacation)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(&vac)
+	if err != nil {
+		logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func (v *vacationRequest) List(w http.ResponseWriter, r *http.Request) {

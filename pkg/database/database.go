@@ -41,6 +41,9 @@ type Database interface {
 	// DeleteTeam removes team entry by the given id.
 	DeleteTeam(ctx context.Context, teamID string) error
 
+	// CreateVacation stores an internal copy of the given vacation resource.
+	// Returns copy with assigned vacationID.
+	CreateVacation(ctx context.Context, vacation *model.Vacation) (*model.Vacation, error)
 	// GetVacationByID returns the associated vacation by the given id.
 	GetVacationByID(ctx context.Context, vacationID string) (*model.Vacation, error)
 	// ListVacations returns a copy of the internal vacation list.

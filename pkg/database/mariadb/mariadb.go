@@ -3,6 +3,7 @@ package mariadb
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -18,32 +19,32 @@ const (
 			firstname, lastname,
 			created_at, updated_at
 		)
-  		VALUES (
+		VALUES (
 			UUID(), ?,
 			?, ?,
-			?, ?, 
+			?, ?,
 			NOW(), NOW()
-  		) RETURNING id, created_at
+		) RETURNING id, created_at
 	`
 
 	basicUserSelect = `
-	  	SELECT
+		SELECT
 			id,
 			parent_id,
-		  	team_id,
-		  	created_at, updated_at,
-		  	firstname, lastname,
-		  	email
-	  	FROM user
+			team_id,
+			created_at, updated_at,
+			firstname, lastname,
+			email
+		FROM user
 	`
 
 	userSelectByID = basicUserSelect + `
-	  	WHERE id = ?
+		WHERE id = ?
 	`
 
 	userUpdate = `
-	  	UPDATE user
-		SET 
+		UPDATE user
+		SET
 			parent_id = ?, team_id = ?,
 			firstname = ?, lastname = ?,
 			email = ?, updated_at = NOW()
@@ -52,35 +53,35 @@ const (
 
 	userDelete = `
 		UPDATE user
-		SET 
-			updated_at = NOW(), 
+		SET
+			updated_at = NOW(),
 			deleted_at = Now()
 		WHERE id = ?
 	`
 
 	teamCreate = `
 		INSERT INTO team (
-			id, 
+			id,
 			owner_id, name,
 			created_at, updated_at
 		)
-	  	VALUES (
-			UUID(), 
+		VALUES (
+			UUID(),
 			?, ?,
 			NOW(), NOW()
-	  	)RETURNING id, created_at
+		)RETURNING id, created_at
 	`
 
 	basicTeamSelect = `
-	  	SELECT
+		SELECT
 			id,
 			owner_id, name,
-		  	created_at, updated_at,
-	  	FROM team
+			created_at, updated_at,
+		FROM team
 	`
 
 	teamSelectByID = basicTeamSelect + `
-	  	WHERE id = ?
+		WHERE id = ?
 	`
 
 	teamUserSelectByID = basicUserSelect + `
@@ -89,25 +90,25 @@ const (
 
 	teamUpdate = `
 		UPDATE team
-  		SET 
+		SET
 			owner_id = ?,
-	  		name = ?,
-	  		updated_at = NOW()
-  		WHERE id = ?
+			name = ?,
+			updated_at = NOW()
+		WHERE id = ?
 	`
 
 	teamDelete = `
 		UPDATE team
-		SET 
-			updated_at = NOW(), 
+		SET
+			updated_at = NOW(),
 			deleted_at = Now()
 		WHERE id = ?
 	`
 
 	basicVacationSelect = `
 		SELECT
-  			id,
-  			user_id,
+			id,
+			user_id,
 			approved_id,
 			from, to,
 			created_at
@@ -120,7 +121,7 @@ const (
 
 	vacationDelete = `
 		UPDATE vacation
-		SET 
+		SET
 			deleted_at = Now()
 		WHERE id = ?
 	`
@@ -129,62 +130,62 @@ const (
 		INSERT INTO user (
 			id, user_id,
 			from, to,
-		  	created_at, updated_at
+			created_at, updated_at
 		)
-  		VALUES (
+		VALUES (
 			UUID(), ?
 			NOW(), NOW()
 			NOW(), NOW()
-  		) RETURNING id, created_at
+		) RETURNING id, created_at
 	`
 
 	basicVacationRequestSelect = `
-	  	SELECT
+		SELECT
 			id,
 			user_id,
 			from, to,
-		  	created_at, updated_at,
-	  	FROM vacation_request
+			created_at, updated_at,
+		FROM vacation_request
 	`
 
 	vacationRequestSelectByID = basicVacationRequestSelect + `
-	  	WHERE id = ?
+		WHERE id = ?
 	`
 
 	vacationRequestUpdate = `
 		UPDATE vacation_request
-  		SET 
+		SET
 			user_id = ?,
-	  		from = ?, to = ?,
-	  		updated_at = NOW()
-  		WHERE id = ?
+			from = ?, to = ?,
+			updated_at = NOW()
+		WHERE id = ?
 	`
 
 	vacationRequestDelete = `
 		UPDATE vacation_request
-		SET 
-			updated_at = NOW(), 
+		SET
+			updated_at = NOW(),
 			deleted_at = Now()
 		WHERE id = ?
 	`
 
 	vacationRessourceCreate = `
 		INSERT INTO user (
-			id, 
+			id,
 			user_id, yearly_days,
 			created_at, updated_at
 		)
-	  	VALUES (
+		VALUES (
 			UUID(),
 			?, ?
 			NOW(), NOW()
-  		) RETURNING id, created_at
+		) RETURNING id, created_at
 	`
 
 	basicVacationRessourceSelect = `
 		SELECT
-	  		id,
-	  		user_id,
+			id,
+			user_id,
 			yearly_days,
 			from, to,
 			created_at, updated_at,
@@ -197,18 +198,18 @@ const (
 
 	vacationRessourceUpdate = `
 		UPDATE vacation_ressource
-	  	SET 
+		SET
 			user_id = ?,
-		  	yearly_days = ?,
+			yearly_days = ?,
 			from = ?, to = ?,
-		  	updated_at = NOW()
-	  	WHERE id = ?
+			updated_at = NOW()
+		WHERE id = ?
 	`
 
 	vacationRessourceDelete = `
 		UPDATE vacationRessource
-		SET 
-			updated_at = NOW(), 
+		SET
+			updated_at = NOW(),
 			deleted_at = Now()
 		WHERE id = ?
 	`
@@ -494,6 +495,12 @@ func (m *MariaDB) DeleteTeam(ctx context.Context, uuid string) error {
 		return err
 	}
 	return err
+}
+
+// CreateVacation stores an internal copy of the given vacation resource.
+// Returns copy with assigned vacationID.
+func (m *MariaDB) CreateVacation(ctx context.Context, vacation *model.Vacation) (*model.Vacation, error) {
+	return nil, fmt.Errorf("not implemented yet")
 }
 
 // GetVacationByID returns the associated vacation by the given id.

@@ -279,6 +279,12 @@ func (i *InmemoryDB) DeleteTeam(_ context.Context, id string) error {
 	return errors.New("team didn't exist")
 }
 
+// CreateVacation stores an internal copy of the given vacation resource.
+// Returns copy with assigned vacationID.
+func (i *InmemoryDB) CreateVacation(ctx context.Context, vacation *model.Vacation) (*model.Vacation, error) {
+	return nil, fmt.Errorf("not implemented yet")
+}
+
 // GetVacationByID returns the associated vacation by the given id.
 func (i *InmemoryDB) GetVacationByID(_ context.Context, id string) (*model.Vacation, error) {
 	i.muVacationStore.Lock()

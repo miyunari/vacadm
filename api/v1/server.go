@@ -64,6 +64,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	router.Path("/user/{userID}/vacation/request").Methods(http.MethodPut).HandlerFunc(vacReqSvc.Create)
 	router.Path("/user/{userID}/vacation/request/{vacation-requestID}").Methods(http.MethodGet).HandlerFunc(vacReqSvc.GetByID)
+	router.Path("/user/{userID}/vacation/request/{vacation-requestID}/approve/{parentID}").Methods(http.MethodPut).HandlerFunc(vacReqSvc.Approve)
 	router.Path("/user/{userID}/vacation/request").Methods(http.MethodGet).HandlerFunc(vacReqSvc.List)
 	router.Path("/user/{userID}/vacation/request/{vacation-requestID}").Methods(http.MethodPatch).HandlerFunc(vacReqSvc.Update)
 	router.Path("/user/{userID}/vacation/request/{vacation-requestID}").Methods(http.MethodDelete).HandlerFunc(vacReqSvc.Delete)
