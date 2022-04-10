@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/MninaTB/vacadm/pkg/model"
@@ -11,6 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// NewInmemoryDB returns initialized inmemoryDB that fulfills
+// the database interface.
 func NewInmemoryDB() *InmemoryDB {
 	return &InmemoryDB{
 		userStore:              make([]*model.User, 0),
@@ -22,16 +25,32 @@ func NewInmemoryDB() *InmemoryDB {
 	}
 }
 
+// InmemoryDB is a threadsafe inmemory database implementation.
 type InmemoryDB struct {
-	userStore              []*model.User
-	teamStore              []*model.Team
-	vacationStore          []*model.Vacation
+	muUserStore sync.Mutex
+	userStore   []*model.User
+
+	muTeamStore sync.Mutex
+	teamStore   []*model.Team
+
+	muVacationStore sync.Mutex
+	vacationStore   []*model.Vacation
+
+	muVacationRequestStore sync.Mutex
 	vacationRequestStore   []*model.VacationRequest
-	vacationRessourceStore []*model.VacationRessource
-	logger                 logrus.FieldLogger
+
+	muVacationRessourceStore sync.Mutex
+	vacationRessourceStore   []*model.VacationRessource
+
+	logger logrus.FieldLogger
 }
 
+// CreateUser stores an internal copy of the given user, if email address is
+// not already in use, given parentID and/or teamID exists.
+// Returns copy with assigned userID.
 func (i *InmemoryDB) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
+	i.muUserStore.Lock()
+	defer i.muUserStore.Unlock()
 	for _, e := range i.userStore {
 		if e.Email == user.Email {
 			return nil, fmt.Errorf("email address must be unique")
@@ -68,7 +87,10 @@ func (i *InmemoryDB) CreateUser(ctx context.Context, user *model.User) (*model.U
 	return user, nil
 }
 
+// GetUserByID returns the associated user by the given id.
 func (i *InmemoryDB) GetUserByID(_ context.Context, id string) (*model.User, error) {
+	i.muUserStore.Lock()
+	defer i.muUserStore.Unlock()
 	for _, s := range i.userStore {
 		if s.ID == id {
 			i.logger.Info("get user with id: ", s.ID)
@@ -79,12 +101,23 @@ func (i *InmemoryDB) GetUserByID(_ context.Context, id string) (*model.User, err
 	return nil, errors.New("no user found")
 }
 
+// ListUsers returns a copy of the internal user list.
 func (i *InmemoryDB) ListUsers(_ context.Context) ([]*model.User, error) {
+	i.muUserStore.Lock()
+	defer i.muUserStore.Unlock()
 	i.logger.Info("get list of users")
-	return i.userStore, nil
+
+	userStore := make([]*model.User, len(i.userStore))
+	for j, u := range i.userStore {
+		userStore[j] = u.Copy()
+	}
+	return userStore, nil
 }
 
+// UpdateUser updates user entry by the given user.
 func (i *InmemoryDB) UpdateUser(_ context.Context, user *model.User) (*model.User, error) {
+	i.muUserStore.Lock()
+	defer i.muUserStore.Unlock()
 	updatededAt := time.Now()
 	for x := 0; x < len(i.userStore); x++ {
 		if i.userStore[x].ID != user.ID {
@@ -103,7 +136,10 @@ func (i *InmemoryDB) UpdateUser(_ context.Context, user *model.User) (*model.Use
 	return nil, errors.New("update failed: no user found")
 }
 
+// DeleteUser removes user entry by the given id.
 func (i *InmemoryDB) DeleteUser(_ context.Context, id string) error {
+	i.muUserStore.Lock()
+	defer i.muUserStore.Unlock()
 	for x, user := range i.userStore {
 		if user.ID == id {
 			i.logger.Info("deleted user with id: ", id)
@@ -115,7 +151,11 @@ func (i *InmemoryDB) DeleteUser(_ context.Context, id string) error {
 	return errors.New("user didn't exist")
 }
 
+// CreateTeam stores an internal copy of the given team.
+// Returns copy with assigned teamID.
 func (i *InmemoryDB) CreateTeam(_ context.Context, team *model.Team) (*model.Team, error) {
+	i.muTeamStore.Lock()
+	defer i.muTeamStore.Unlock()
 	createdAt := time.Now()
 	team.CreatedAt = &createdAt
 	team.ID = uuid.NewString()
@@ -126,7 +166,10 @@ func (i *InmemoryDB) CreateTeam(_ context.Context, team *model.Team) (*model.Tea
 	return team, nil
 }
 
+// GetTeamByID returns the associated team by the given id.
 func (i *InmemoryDB) GetTeamByID(_ context.Context, id string) (*model.Team, error) {
+	i.muTeamStore.Lock()
+	defer i.muTeamStore.Unlock()
 	for _, s := range i.teamStore {
 		if s.ID == id {
 			i.logger.Info("get team with id: ", s.ID)
@@ -137,12 +180,22 @@ func (i *InmemoryDB) GetTeamByID(_ context.Context, id string) (*model.Team, err
 	return nil, errors.New("no team found")
 }
 
+// ListTeams returns a copy of the internal team list.
 func (i *InmemoryDB) ListTeams(_ context.Context) ([]*model.Team, error) {
+	i.muTeamStore.Lock()
+	defer i.muTeamStore.Unlock()
 	i.logger.Info("get list of teams")
-	return i.teamStore, nil
+	teamStore := make([]*model.Team, len(i.teamStore))
+	for j, t := range i.teamStore {
+		teamStore[j] = t.Copy()
+	}
+	return teamStore, nil
 }
 
+// ListTeamUsers returns a list of users associated by the given teamID
 func (i *InmemoryDB) ListTeamUsers(ctx context.Context, teamID string) ([]*model.User, error) {
+	i.muTeamStore.Lock()
+	defer i.muTeamStore.Unlock()
 	var users []*model.User
 	allUsers, err := i.ListUsers(ctx)
 	if err != nil {
@@ -156,7 +209,10 @@ func (i *InmemoryDB) ListTeamUsers(ctx context.Context, teamID string) ([]*model
 	return users, nil
 }
 
+// UpdateTeam updates team entry by the given team.
 func (i *InmemoryDB) UpdateTeam(_ context.Context, team *model.Team) (*model.Team, error) {
+	i.muTeamStore.Lock()
+	defer i.muTeamStore.Unlock()
 	updatededAt := time.Now()
 	for x := 0; x < len(i.teamStore); x++ {
 		if i.teamStore[x].ID == team.ID {
@@ -170,7 +226,10 @@ func (i *InmemoryDB) UpdateTeam(_ context.Context, team *model.Team) (*model.Tea
 	return nil, errors.New("update failed: no team found")
 }
 
+// DeleteTeam removes team entry by the given id.
 func (i *InmemoryDB) DeleteTeam(_ context.Context, id string) error {
+	i.muTeamStore.Lock()
+	defer i.muTeamStore.Unlock()
 	for x, team := range i.teamStore {
 		if team.ID == id {
 			i.logger.Info("delete team with id: ", id)
@@ -182,7 +241,10 @@ func (i *InmemoryDB) DeleteTeam(_ context.Context, id string) error {
 	return errors.New("team didn't exist")
 }
 
+// GetVacationByID returns the associated vacation by the given id.
 func (i *InmemoryDB) GetVacationByID(_ context.Context, id string) (*model.Vacation, error) {
+	i.muVacationStore.Lock()
+	defer i.muVacationStore.Unlock()
 	for _, s := range i.vacationStore {
 		if s.ID == id {
 			i.logger.Info("get vacation with id: ", id)
@@ -193,12 +255,22 @@ func (i *InmemoryDB) GetVacationByID(_ context.Context, id string) (*model.Vacat
 	return nil, errors.New("no vacation found")
 }
 
+// ListVacations returns a copy of the internal vacation list.
 func (i *InmemoryDB) ListVacations(_ context.Context) ([]*model.Vacation, error) {
+	i.muVacationStore.Lock()
+	defer i.muVacationStore.Unlock()
 	i.logger.Info("get list of vacations")
-	return i.vacationStore, nil
+	vacationStore := make([]*model.Vacation, len(i.vacationStore))
+	for j, v := range i.vacationStore {
+		vacationStore[j] = v.Copy()
+	}
+	return vacationStore, nil
 }
 
+// DeleteVacation removes vacation entry by the given id.
 func (i *InmemoryDB) DeleteVacation(_ context.Context, id string) error {
+	i.muVacationStore.Lock()
+	defer i.muVacationStore.Unlock()
 	for x, vacation := range i.vacationStore {
 		if vacation.ID == id {
 			i.logger.Info("delete vacation with id: ", vacation.ID)
@@ -210,7 +282,11 @@ func (i *InmemoryDB) DeleteVacation(_ context.Context, id string) error {
 	return errors.New("vacation didn't exist")
 }
 
+// CreateVacationRequest stores an internal copy of the given vacationRequest.
+// Returns copy with assigned vacationRequestID.
 func (i *InmemoryDB) CreateVacationRequest(_ context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
+	i.muVacationRequestStore.Lock()
+	defer i.muVacationRequestStore.Unlock()
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
@@ -221,7 +297,10 @@ func (i *InmemoryDB) CreateVacationRequest(_ context.Context, v *model.VacationR
 	return v, nil
 }
 
+// GetVacationRequestByID returns the associated vacationRequest by the given id.
 func (i *InmemoryDB) GetVacationRequestByID(_ context.Context, id string) (*model.VacationRequest, error) {
+	i.muVacationRequestStore.Lock()
+	defer i.muVacationRequestStore.Unlock()
 	for _, s := range i.vacationRequestStore {
 		if s.ID == id {
 			i.logger.Info("get vacation-request with id: ", id)
@@ -232,17 +311,28 @@ func (i *InmemoryDB) GetVacationRequestByID(_ context.Context, id string) (*mode
 	return nil, errors.New("no vacation-request found")
 }
 
+// ListVacationRequests returns a copy of the internal vacationRequest list.
 func (i *InmemoryDB) ListVacationRequests(_ context.Context) ([]*model.VacationRequest, error) {
+	i.muVacationRequestStore.Lock()
+	defer i.muVacationRequestStore.Unlock()
 	i.logger.Info("get list of vacation-requests")
-	return i.vacationRequestStore, nil
+	vacationRequestStore := make([]*model.VacationRequest, len(i.vacationRequestStore))
+	for j, v := range i.vacationRequestStore {
+		vacationRequestStore[j] = v.Copy()
+	}
+	return vacationRequestStore, nil
 }
 
+// UpdateVacationRequest updates vacationRequest entry by the given vacationRequest.
 func (i *InmemoryDB) UpdateVacationRequest(_ context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
 	i.logger.Error("update failed: no update on vacation-request possible")
 	return nil, errors.New("update failed: no update on vacation-request possible")
 }
 
+// DeleteVacationRequest removes vacationRequest entry by the given id.
 func (i *InmemoryDB) DeleteVacationRequest(_ context.Context, id string) error {
+	i.muVacationRequestStore.Lock()
+	defer i.muVacationRequestStore.Unlock()
 	for x, vacationRequest := range i.vacationRequestStore {
 		if vacationRequest.ID == id {
 			i.logger.Info("delete vacation-request with id: ", vacationRequest.ID)
@@ -254,7 +344,11 @@ func (i *InmemoryDB) DeleteVacationRequest(_ context.Context, id string) error {
 	return errors.New("vacation-request didn't exist")
 }
 
+// CreateVacationRessource stores an internal copy of the given vacationRessource.
+// Returns copy with assigned vacationRessourceID.
 func (i *InmemoryDB) CreateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
+	i.muVacationRessourceStore.Lock()
+	defer i.muVacationRessourceStore.Unlock()
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
@@ -265,7 +359,10 @@ func (i *InmemoryDB) CreateVacationRessource(_ context.Context, v *model.Vacatio
 	return v, nil
 }
 
+// GetVacationRessourceByID returns the associated vacationRessource by the given id.
 func (i *InmemoryDB) GetVacationRessourceByID(_ context.Context, id string) (*model.VacationRessource, error) {
+	i.muVacationRessourceStore.Lock()
+	defer i.muVacationRessourceStore.Unlock()
 	for _, s := range i.vacationRessourceStore {
 		if s.ID == id {
 			i.logger.Info("get vacation-ressource with id: ", id)
@@ -276,17 +373,28 @@ func (i *InmemoryDB) GetVacationRessourceByID(_ context.Context, id string) (*mo
 	return nil, errors.New("no vacation-ressource found")
 }
 
+// ListVacationRessource returns a copy of the internal vacationRessource list.
 func (i *InmemoryDB) ListVacationRessource(_ context.Context) ([]*model.VacationRessource, error) {
+	i.muVacationRessourceStore.Lock()
+	defer i.muVacationRessourceStore.Unlock()
 	i.logger.Info("get list of vacation-ressource")
-	return i.vacationRessourceStore, nil
+	vacationRessourceStore := make([]*model.VacationRessource, len(i.vacationRessourceStore))
+	for j, v := range i.vacationRessourceStore {
+		vacationRessourceStore[j] = v.Copy()
+	}
+	return vacationRessourceStore, nil
 }
 
+// UpdateVacationRessource updates vacationRessource entry by the given vacationRessource.
 func (i *InmemoryDB) UpdateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
 	i.logger.Error("update failed: no update on vacation-ressource possible")
 	return nil, errors.New("update failed: no update on vacation-ressource possible")
 }
 
+// DeleteVacationRessource removes vacationRessource entry by the given id.
 func (i *InmemoryDB) DeleteVacationRessource(_ context.Context, id string) error {
+	i.muVacationRessourceStore.Lock()
+	defer i.muVacationRessourceStore.Unlock()
 	for x, vacationRessource := range i.vacationRessourceStore {
 		if vacationRessource.ID == id {
 			i.logger.Info("delete vacation-ressource with id: ", vacationRessource.ID)
