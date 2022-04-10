@@ -11,19 +11,22 @@ import (
 	"github.com/MninaTB/vacadm/pkg/model"
 )
 
-func NewUserService(store database.Database, logger logrus.FieldLogger) *userService {
-	return &userService{
+// NewUserService returns a UserService.
+func NewUserService(store database.Database, logger logrus.FieldLogger) *UserService {
+	return &UserService{
 		store:  store,
 		logger: logger.WithField("component", "user-service"),
 	}
 }
 
-type userService struct {
+// UserService implements http.HandlerFunc's to operate on user resources.
+type UserService struct {
 	store  database.Database
 	logger logrus.FieldLogger
 }
 
-func (u *userService) Create(w http.ResponseWriter, r *http.Request) {
+// Create reads the given payload and creates a store representation accordingly.
+func (u *UserService) Create(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "create")
 	logger.Info("create new user")
 	var usr model.User
@@ -49,7 +52,9 @@ func (u *userService) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (u *userService) GetByID(w http.ResponseWriter, r *http.Request) {
+// GetByID extracts a userID from URL and writes all user information into the
+// given response writer.
+func (u *UserService) GetByID(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "read")
 	logger.Info("get user by id")
 	userID, err := util.UserIDFromRequest(r)
@@ -72,7 +77,8 @@ func (u *userService) GetByID(w http.ResponseWriter, r *http.Request) {
 	u.logger.Info("get user with id: ", userID)
 }
 
-func (u *userService) List(w http.ResponseWriter, r *http.Request) {
+// List retuns a list of all users available on the internal store.
+func (u *UserService) List(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "list")
 	logger.Info("retrieve user list")
 	list, err := u.store.ListUsers(r.Context())
@@ -89,7 +95,9 @@ func (u *userService) List(w http.ResponseWriter, r *http.Request) {
 	u.logger.Info("get list of users")
 }
 
-func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
+// Update reads new user information from the request body and updates the store
+// representation accordingly.
+func (u *UserService) Update(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "update")
 	logger.Info("update user")
 	var usr model.User
@@ -113,7 +121,8 @@ func (u *userService) Update(w http.ResponseWriter, r *http.Request) {
 	u.logger.Info("update user with id: ", usr.ID)
 }
 
-func (u *userService) Delete(w http.ResponseWriter, r *http.Request) {
+// Delete a user associated to the given userID in the URL.
+func (u *UserService) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := u.logger.WithField("method", "delete")
 	logger.Info("delete user")
 	userID, err := util.UserIDFromRequest(r)

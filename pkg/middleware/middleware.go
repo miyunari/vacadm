@@ -10,7 +10,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Validator implements methods to verify auth tokens.
 type Validator interface {
+	// Valid if a token is valid, userID and teamID are returned.
+	// if a token is invalid, an error is returned.
 	Valid(token string) (userID string, teamID string, err error)
 }
 
@@ -45,6 +48,8 @@ func shallPass(r *http.Request, db database.RelationDB, rUserID, rTeamID string)
 	return (isUser || isParent) && (isMember || isOwner), nil
 }
 
+// Auth returns a mux.MiddlewareFunc that restricts user access based on the
+// carried bearer token.
 func Auth(v Validator, db database.RelationDB) mux.MiddlewareFunc {
 	logger := logrus.WithField("component", "auth-middleware")
 	return func(h http.Handler) http.Handler {
@@ -78,6 +83,7 @@ func Auth(v Validator, db database.RelationDB) mux.MiddlewareFunc {
 	}
 }
 
+// Logging returns a mux.MiddlewareFunc logs beginning and ending requests events.
 func Logging() mux.MiddlewareFunc {
 	logger := logrus.WithField("component", "log-middleware")
 	return func(h http.Handler) http.Handler {

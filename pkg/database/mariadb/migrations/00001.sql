@@ -46,7 +46,7 @@ CREATE TABLE vaccation_request (
     FOREIGN KEY(user_id) REFERENCES user(id)
 );
 
-CREATE TABLE vaccation_ressource (
+CREATE TABLE vaccation_resource (
     id UUID NOT NULL,
     user_id UUID NOT NULL,
     yearlyDays INT NOT NULL,

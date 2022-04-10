@@ -7,16 +7,16 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestVacationRessource_Copy(t *testing.T) {
+func TestVacationResource_Copy(t *testing.T) {
 	now := time.Now()
 	tt := []struct {
 		name     string
-		original *VacationRessource
+		original *VacationResource
 	}{
 		{
 			name: "expected",
-			original: &VacationRessource{
-				ID:         "test-vacation-ressource-id",
+			original: &VacationResource{
+				ID:         "test-vacation-resource-id",
 				UserID:     "test-user-id",
 				YearlyDays: 10,
 				From:       now.Add(time.Minute),
@@ -34,8 +34,8 @@ func TestVacationRessource_Copy(t *testing.T) {
 			if !cmp.Equal(tc.original, got) {
 				t.Fatal(cmp.Diff(tc.original, got))
 			}
-			got.ID += "vacation-ressource-id"
-			got.UserID = "user-id-ressource"
+			got.ID += "vacation-resource-id"
+			got.UserID = "user-id-resource"
 			got.YearlyDays = 10
 			got.From = time.Now()
 			got.To = time.Now()

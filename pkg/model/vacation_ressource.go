@@ -2,7 +2,8 @@ package model
 
 import "time"
 
-type VacationRessource struct {
+// VacationResource represents the VacationResource model.
+type VacationResource struct {
 	ID         string     `json:"id"`
 	UserID     string     `json:"user_id"`
 	YearlyDays int        `json:"yearly_days"`
@@ -13,7 +14,8 @@ type VacationRessource struct {
 	UpdatedAt  *time.Time `json:"updated_at"`
 }
 
-func (v *VacationRessource) Copy() *VacationRessource {
+// Copy returns a deep copy.
+func (v *VacationResource) Copy() *VacationResource {
 	var createdAt, deletedAt, updatedAt *time.Time
 	if v.CreatedAt != nil {
 		ct := time.Unix(0, v.CreatedAt.UnixNano())
@@ -27,7 +29,7 @@ func (v *VacationRessource) Copy() *VacationRessource {
 		ut := time.Unix(0, v.UpdatedAt.UnixNano())
 		updatedAt = &ut
 	}
-	return &VacationRessource{
+	return &VacationResource{
 		ID:         v.ID,
 		UserID:     v.UserID,
 		YearlyDays: v.YearlyDays,

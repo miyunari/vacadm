@@ -10,6 +10,7 @@ import (
 	"github.com/MninaTB/vacadm/pkg/database"
 )
 
+// Notifier implements methods to inform a user or team about a ongoing action.
 type Notifier interface {
 	NotifyUser(ctx context.Context, userID, action string) error
 	NotifyTeam(ctx context.Context, teamID, action string) error
@@ -18,10 +19,10 @@ type Notifier interface {
 var _ Notifier = (*NoopNotifier)(nil)
 var _ Notifier = (*Mailer)(nil)
 
-var (
-	ErrEmptyTeam = errors.New("team has no member")
-)
+// ErrEmptyTeam is returnd if a requested team does not contain users.
+var ErrEmptyTeam = errors.New("team has no member")
 
+// NewNoopNotifier returns a new NoopNotifier.
 func NewNoopNotifier() *NoopNotifier {
 	return &NoopNotifier{
 		logger: logrus.New().WithFields(logrus.Fields{
@@ -30,10 +31,13 @@ func NewNoopNotifier() *NoopNotifier {
 	}
 }
 
+// NoopNotifier does not fulfill any operation. All actions are simply logged to
+// console.
 type NoopNotifier struct {
 	logger logrus.FieldLogger
 }
 
+// NotifyUser logs userID and action to console.
 func (m *NoopNotifier) NotifyUser(ctx context.Context, userID, action string) error {
 	m.logger.WithFields(logrus.Fields{
 		"notify-user": userID,
@@ -42,6 +46,7 @@ func (m *NoopNotifier) NotifyUser(ctx context.Context, userID, action string) er
 	return nil
 }
 
+// NotifyUser logs teamID and action to console.
 func (m *NoopNotifier) NotifyTeam(ctx context.Context, teamID, action string) error {
 	m.logger.WithFields(logrus.Fields{
 		"notify-team": teamID,
@@ -50,6 +55,7 @@ func (m *NoopNotifier) NotifyTeam(ctx context.Context, teamID, action string) er
 	return nil
 }
 
+// Mailer contains all information to send mails via smtp.
 type Mailer struct {
 	address string
 	auth    smtp.Auth
@@ -58,6 +64,7 @@ type Mailer struct {
 	logger  logrus.FieldLogger
 }
 
+// NewMailer returns a new Mailer.
 func NewMailer(smtpHost, smtpPort, user, password string, db database.Database) *Mailer {
 	address := smtpHost + ":" + smtpPort
 	return &Mailer{
@@ -72,6 +79,8 @@ func NewMailer(smtpHost, smtpPort, user, password string, db database.Database) 
 	}
 }
 
+// NotifyUser sends an e-Mail a user based in the given userID. Content is provided
+// by the given action.
 func (m *Mailer) NotifyUser(ctx context.Context, userID, action string) error {
 	m.logger.WithFields(logrus.Fields{
 		"notify-user": userID,
@@ -86,6 +95,8 @@ func (m *Mailer) NotifyUser(ctx context.Context, userID, action string) error {
 	return smtp.SendMail(m.address, m.auth, m.from, []string{usr.Email}, message)
 }
 
+// NotifyTeam sends e-Mails a all users in a Team based on the given teamID.
+// Content is provided by the given action.
 func (m *Mailer) NotifyTeam(ctx context.Context, teamID, action string) error {
 	m.logger.WithFields(logrus.Fields{
 		"notify-team": teamID,

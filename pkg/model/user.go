@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// User represents the User model.
 type User struct {
 	ID        string     `json:"id"`
 	ParentID  *string    `json:"parent_id"`
@@ -14,6 +15,7 @@ type User struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+// Copy returns a deep copy.
 func (u *User) Copy() *User {
 	var parentID, teamID *string
 	if u.ParentID != nil {

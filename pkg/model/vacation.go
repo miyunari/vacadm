@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// Vacation represents the Vacation model.
 type Vacation struct {
 	ID         string     `json:"id"`
 	UserID     string     `json:"user_id"`
@@ -12,6 +13,7 @@ type Vacation struct {
 	DeletedAt  *time.Time `json:"deleted_at"`
 }
 
+// Copy returns a deep copy.
 func (v *Vacation) Copy() *Vacation {
 	var approvedBy *string
 	if v.ApprovedBy != nil {

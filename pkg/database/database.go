@@ -65,15 +65,15 @@ type Database interface {
 	// DeleteVacationRequest removes vacationRequest entry by the given id.
 	DeleteVacationRequest(ctx context.Context, vacationRequestID string) error
 
-	// CreateVacationRessource stores an internal copy of the given vacationRessource.
-	// Returns copy with assigned vacationRessourceID.
-	CreateVacationRessource(ctx context.Context, vacationRessource *model.VacationRessource) (*model.VacationRessource, error)
-	// GetVacationRessourceByID returns the associated vacationRessource by the given id.
-	GetVacationRessourceByID(ctx context.Context, vacationRessourceID string) (*model.VacationRessource, error)
-	// ListVacationRessource returns a copy of the internal vacationRessource list.
-	ListVacationRessource(ctx context.Context) ([]*model.VacationRessource, error)
-	// UpdateVacationRessource updates vacationRessource entry by the given vacationRessource.
-	UpdateVacationRessource(ctx context.Context, vacationRessource *model.VacationRessource) (*model.VacationRessource, error)
-	// DeleteVacationRessource removes vacationRessource entry by the given id.
-	DeleteVacationRessource(ctx context.Context, vacationRessourceID string) error
+	// CreateVacationResource stores an internal copy of the given vacationResource.
+	// Returns copy with assigned vacationResourceID.
+	CreateVacationResource(ctx context.Context, vacationResource *model.VacationResource) (*model.VacationResource, error)
+	// GetVacationResourceByID returns the associated vacationResource by the given id.
+	GetVacationResourceByID(ctx context.Context, vacationResourceID string) (*model.VacationResource, error)
+	// ListVacationResource returns a copy of the internal vacationResource list.
+	ListVacationResource(ctx context.Context) ([]*model.VacationResource, error)
+	// UpdateVacationResource updates vacationResource entry by the given vacationResource.
+	UpdateVacationResource(ctx context.Context, vacationResource *model.VacationResource) (*model.VacationResource, error)
+	// DeleteVacationResource removes vacationResource entry by the given id.
+	DeleteVacationResource(ctx context.Context, vacationResourceID string) error
 }

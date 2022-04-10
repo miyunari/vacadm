@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// Team represents the Team model.
 type Team struct {
 	ID        string     `json:"id"`
 	OwnerID   string     `json:"owner_id"`
@@ -11,6 +12,7 @@ type Team struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+// Copy returns a deep copy.
 func (t *Team) Copy() *Team {
 	var createdAt, deletedAt, updatedAt *time.Time
 	if t.CreatedAt != nil {

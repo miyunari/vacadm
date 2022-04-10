@@ -6,19 +6,24 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/MninaTB/vacadm/api/v1/util"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/jwt"
 	"github.com/MninaTB/vacadm/pkg/model"
-	"github.com/sirupsen/logrus"
 )
 
+// Tokenizer implements methods to verify auth tokens.
 type Tokenizer interface {
+	// Valid if a token is valid, userID and teamID are returned.
+	// if a token is invalid, an error is returned.
 	Valid(token string) (userID string, teamID string, err error)
 }
 
-func NewTeamService(store database.Database, logger logrus.FieldLogger, t Tokenizer) *teamService {
-	return &teamService{
+// NewTeamService returns a new TeamService.
+func NewTeamService(store database.Database, logger logrus.FieldLogger, t Tokenizer) *TeamService {
+	return &TeamService{
 		store:         store,
 		relationStore: database.NewRelationDB(store),
 		tokenizer:     t,
@@ -26,15 +31,17 @@ func NewTeamService(store database.Database, logger logrus.FieldLogger, t Tokeni
 	}
 }
 
-type teamService struct {
+// TeamService implements http.HandlerFunc's to operate on team resources.
+type TeamService struct {
 	store         database.Database
 	relationStore database.RelationDB
 	logger        logrus.FieldLogger
 	tokenizer     Tokenizer
 }
 
-func (t *teamService) Create(w http.ResponseWriter, r *http.Request) {
-	logger := t.logger.WithField("component", "create")
+// Create reads the given payload and creates a store representation accordingly.
+func (t *TeamService) Create(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("method", "create")
 	logger.Info("create new team")
 	var team model.Team
 	err := json.NewDecoder(r.Body).Decode(&team)
@@ -59,8 +66,10 @@ func (t *teamService) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
-	logger := t.logger.WithField("component", "read")
+// GetByID extracts a TeamID from URL and writes all team information into the
+// given response writer.
+func (t *TeamService) GetByID(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("method", "getByID")
 	logger.Info("get team by id")
 	teamID, err := util.TeamIDFromRequest(r)
 	if err != nil {
@@ -82,8 +91,9 @@ func (t *teamService) GetByID(w http.ResponseWriter, r *http.Request) {
 	t.logger.Info("get team with id: ", teamID)
 }
 
-func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
-	logger := t.logger.WithField("component", "list")
+// List retuns a list of all teams available on the internal store.
+func (t *TeamService) List(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("method", "list")
 	logger.Info("retrieve team list")
 	list, err := t.store.ListTeams(r.Context())
 	if err != nil {
@@ -99,8 +109,9 @@ func (t *teamService) List(w http.ResponseWriter, r *http.Request) {
 	t.logger.Info("get list of teams")
 }
 
-func (t *teamService) ListTeamUsers(w http.ResponseWriter, r *http.Request) {
-	logger := t.logger.WithField("component", "list-users")
+// ListTeamUsers returns a list of users associated to teamID transmitted in URL.
+func (t *TeamService) ListTeamUsers(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("method", "ListTeamUsers")
 	logger.Info("retrieve list users from team")
 	teamID, err := util.TeamIDFromRequest(r)
 	if err != nil {
@@ -122,8 +133,10 @@ func (t *teamService) ListTeamUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
-	logger := t.logger.WithField("component", "update")
+// Update reads new team settings from the request body and updates the store
+// representation accordingly.
+func (t *TeamService) Update(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("method", "update")
 	logger.Info("update team")
 	var team model.Team
 	err := json.NewDecoder(r.Body).Decode(&team)
@@ -146,8 +159,9 @@ func (t *teamService) Update(w http.ResponseWriter, r *http.Request) {
 	t.logger.Info("update team with id: ", team.ID)
 }
 
-func (t *teamService) Delete(w http.ResponseWriter, r *http.Request) {
-	logger := t.logger.WithField("component", "delete")
+// Delete a team associated to the given teamID in the URL.
+func (t *TeamService) Delete(w http.ResponseWriter, r *http.Request) {
+	logger := t.logger.WithField("method", "delete")
 	logger.Info("delete team")
 	teamID, err := util.TeamIDFromRequest(r)
 	if err != nil {
@@ -165,7 +179,40 @@ func (t *teamService) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (t *teamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
+// ListCapacity lists teams and their availability for the requested period.
+// Example request:
+// {
+//   "from":"2009-11-10T23:00:00Z",
+//   "to":"2009-11-10T23:00:00Z",
+//   # NOTE: team_id is optional. if no teamID is provided, all teams are taken
+//   # into account.
+//   "team_id":"1234-456"
+// }
+//
+// Example response:
+// {
+//   "to":"0001-01-01T00:00:00Z",
+//   "from":"0001-01-01T00:00:00Z",
+//   "team_id":"",
+//   # NOTE: Depending on the availability ratio this value can be:
+//   # "HIGH", "MEDIUM" or "LOW".
+//   "availability":"HIGH",
+//   # NOTE: vacations are only displayed if the requesting user is a team owner.
+//   # Or the requesting user is the parent of a team owner.
+//   # Parent is recursive in this case. This means that the parent of the
+//   # parent is also valid.
+//   "vacations":[
+//     {
+//       "id":"",
+//       "user_id":"",
+//       "approved_by":null,
+//       "from":"0001-01-01T00:00:00Z",
+//       "to":"0001-01-01T00:00:00Z",
+//       "created_at":null
+//     }
+//   ]
+// }
+func (t *TeamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithFields(
 		logrus.Fields{
 			"method": "list-capacity",
@@ -262,7 +309,7 @@ func (t *teamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if isOwner || isParentOfOwner {
-			window.vacation = vacs
+			window.Vacation = vacs
 		}
 
 		users, err := t.store.ListTeamUsers(r.Context(), tb.teamID)
@@ -296,7 +343,7 @@ func (t *teamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (t *teamService) vaccationByTeam(ctx context.Context, teamID string, from, to time.Time) ([]*model.Vacation, error) {
+func (t *TeamService) vaccationByTeam(ctx context.Context, teamID string, from, to time.Time) ([]*model.Vacation, error) {
 	vacations, err := t.store.GetVacationsByTeamID(ctx, teamID)
 	if err != nil {
 		return nil, err
@@ -326,20 +373,22 @@ func daysBetween(from, to time.Time) float64 {
 }
 
 type capacityRequest struct {
-	From   time.Time
-	To     time.Time
-	TeamID string
+	From time.Time `json:"to"`
+	To   time.Time `json:"from"`
+	// NOTE: optional
+	TeamID string `json:"team_id"`
 }
 
 type capacityResponse struct {
-	From   time.Time
-	To     time.Time
-	TeamID string
+	From   time.Time `json:"to"`
+	To     time.Time `json:"from"`
+	TeamID string    `json:"team_id"`
 
-	Availability string // NOTE: HIGH, MEDIUM, LOW
+	// NOTE: HIGH, MEDIUM, LOW
+	Availability string `json:"availability"`
 
 	// NOTE: Only with sufficient authorization
-	vacation []*model.Vacation
+	Vacation []*model.Vacation `json:"vacations"`
 }
 
 type teamBundle struct {

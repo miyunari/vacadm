@@ -12,11 +12,13 @@ import (
 	"github.com/MninaTB/vacadm/pkg/model"
 )
 
+// Tokenizer implements methods to verify and generate new auth tokens.
 type Tokenizer interface {
 	Valid(token string) (userID string, teamID string, err error)
 	Generate(u *model.User) (string, error)
 }
 
+// NewTokenService returns a new TokenService
 func NewTokenService(db database.Database, t Tokenizer) *TokenService {
 	return &TokenService{
 		tokenizer:     t,
@@ -26,6 +28,7 @@ func NewTokenService(db database.Database, t Tokenizer) *TokenService {
 	}
 }
 
+// TokenService is used to refresh/create tokens for existing users.
 type TokenService struct {
 	store         database.Database
 	relationStore database.RelationDB
@@ -33,6 +36,10 @@ type TokenService struct {
 	logger        logrus.FieldLogger
 }
 
+// Refresh verifies user permissions based on the given token. If a user is
+// autorized a new token will be generated and returned in the response body.
+// Payload example:
+// {"Token":"a6f9f420-0c43-4527-8178-fe53a2a66302"}
 func (t *TokenService) Refresh(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("method", "refresh")
 

@@ -20,7 +20,7 @@ func NewInmemoryDB() *InmemoryDB {
 		teamStore:              make([]*model.Team, 0),
 		vacationStore:          make([]*model.Vacation, 0),
 		vacationRequestStore:   make([]*model.VacationRequest, 0),
-		vacationRessourceStore: make([]*model.VacationRessource, 0),
+		vacationResourceStore: make([]*model.VacationResource, 0),
 		logger:                 logrus.New().WithField("component", "inmemoryDB"),
 	}
 }
@@ -39,8 +39,8 @@ type InmemoryDB struct {
 	muVacationRequestStore sync.Mutex
 	vacationRequestStore   []*model.VacationRequest
 
-	muVacationRessourceStore sync.Mutex
-	vacationRessourceStore   []*model.VacationRessource
+	muVacationResourceStore sync.Mutex
+	vacationResourceStore   []*model.VacationResource
 
 	logger logrus.FieldLogger
 }
@@ -441,11 +441,11 @@ func (i *InmemoryDB) DeleteVacationRequest(_ context.Context, id string) error {
 	return errors.New("vacation-request didn't exist")
 }
 
-// CreateVacationRessource stores an internal copy of the given vacationRessource.
-// Returns copy with assigned vacationRessourceID.
-func (i *InmemoryDB) CreateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
-	i.muVacationRessourceStore.Lock()
-	defer i.muVacationRessourceStore.Unlock()
+// CreateVacationResource stores an internal copy of the given vacationResource.
+// Returns copy with assigned vacationResourceID.
+func (i *InmemoryDB) CreateVacationResource(_ context.Context, v *model.VacationResource) (*model.VacationResource, error) {
+	i.muVacationResourceStore.Lock()
+	defer i.muVacationResourceStore.Unlock()
 	if v.UserID == "" {
 		return nil, fmt.Errorf("missing userID")
 	}
@@ -454,54 +454,54 @@ func (i *InmemoryDB) CreateVacationRessource(_ context.Context, v *model.Vacatio
 	v.ID = uuid.NewString()
 	vCopy := v.Copy()
 
-	i.logger.Info("create vacation-ressource with id: ", v.ID)
-	i.vacationRessourceStore = append(i.vacationRessourceStore, vCopy)
+	i.logger.Info("create vacation-resource with id: ", v.ID)
+	i.vacationResourceStore = append(i.vacationResourceStore, vCopy)
 	return v, nil
 }
 
-// GetVacationRessourceByID returns the associated vacationRessource by the given id.
-func (i *InmemoryDB) GetVacationRessourceByID(_ context.Context, id string) (*model.VacationRessource, error) {
-	i.muVacationRessourceStore.Lock()
-	defer i.muVacationRessourceStore.Unlock()
-	for _, s := range i.vacationRessourceStore {
+// GetVacationResourceByID returns the associated vacationResource by the given id.
+func (i *InmemoryDB) GetVacationResourceByID(_ context.Context, id string) (*model.VacationResource, error) {
+	i.muVacationResourceStore.Lock()
+	defer i.muVacationResourceStore.Unlock()
+	for _, s := range i.vacationResourceStore {
 		if s.ID == id {
-			i.logger.Info("get vacation-ressource with id: ", id)
+			i.logger.Info("get vacation-resource with id: ", id)
 			return s.Copy(), nil
 		}
 	}
-	i.logger.Error("no vacation-ressource found")
-	return nil, errors.New("no vacation-ressource found")
+	i.logger.Error("no vacation-resource found")
+	return nil, errors.New("no vacation-resource found")
 }
 
-// ListVacationRessource returns a copy of the internal vacationRessource list.
-func (i *InmemoryDB) ListVacationRessource(_ context.Context) ([]*model.VacationRessource, error) {
-	i.muVacationRessourceStore.Lock()
-	defer i.muVacationRessourceStore.Unlock()
-	i.logger.Info("get list of vacation-ressource")
-	vacationRessourceStore := make([]*model.VacationRessource, len(i.vacationRessourceStore))
-	for j, v := range i.vacationRessourceStore {
-		vacationRessourceStore[j] = v.Copy()
+// ListVacationResource returns a copy of the internal vacationResource list.
+func (i *InmemoryDB) ListVacationResource(_ context.Context) ([]*model.VacationResource, error) {
+	i.muVacationResourceStore.Lock()
+	defer i.muVacationResourceStore.Unlock()
+	i.logger.Info("get list of vacation-resource")
+	vacationResourceStore := make([]*model.VacationResource, len(i.vacationResourceStore))
+	for j, v := range i.vacationResourceStore {
+		vacationResourceStore[j] = v.Copy()
 	}
-	return vacationRessourceStore, nil
+	return vacationResourceStore, nil
 }
 
-// UpdateVacationRessource updates vacationRessource entry by the given vacationRessource.
-func (i *InmemoryDB) UpdateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
-	i.logger.Error("update failed: no update on vacation-ressource possible")
-	return nil, errors.New("update failed: no update on vacation-ressource possible")
+// UpdateVacationResource updates vacationResource entry by the given vacationResource.
+func (i *InmemoryDB) UpdateVacationResource(_ context.Context, v *model.VacationResource) (*model.VacationResource, error) {
+	i.logger.Error("update failed: no update on vacation-resource possible")
+	return nil, errors.New("update failed: no update on vacation-resource possible")
 }
 
-// DeleteVacationRessource removes vacationRessource entry by the given id.
-func (i *InmemoryDB) DeleteVacationRessource(_ context.Context, id string) error {
-	i.muVacationRessourceStore.Lock()
-	defer i.muVacationRessourceStore.Unlock()
-	for x, vacationRessource := range i.vacationRessourceStore {
-		if vacationRessource.ID == id {
-			i.logger.Info("delete vacation-ressource with id: ", vacationRessource.ID)
-			i.vacationRessourceStore = append(i.vacationRessourceStore[:x], i.vacationRessourceStore[x+1:]...)
+// DeleteVacationResource removes vacationResource entry by the given id.
+func (i *InmemoryDB) DeleteVacationResource(_ context.Context, id string) error {
+	i.muVacationResourceStore.Lock()
+	defer i.muVacationResourceStore.Unlock()
+	for x, vacationResource := range i.vacationResourceStore {
+		if vacationResource.ID == id {
+			i.logger.Info("delete vacation-resource with id: ", vacationResource.ID)
+			i.vacationResourceStore = append(i.vacationResourceStore[:x], i.vacationResourceStore[x+1:]...)
 			return nil
 		}
 	}
-	i.logger.Error("vacation-ressource didn't exist")
-	return errors.New("vacation-ressource didn't exist")
+	i.logger.Error("vacation-resource didn't exist")
+	return errors.New("vacation-resource didn't exist")
 }

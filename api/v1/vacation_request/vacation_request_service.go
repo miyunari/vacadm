@@ -6,16 +6,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+
 	"github.com/MninaTB/vacadm/api/v1/util"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/model"
 	"github.com/MninaTB/vacadm/pkg/notify"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
-func NewVacationRequest(store database.Database, notifier notify.Notifier, logger logrus.FieldLogger) *vacationRequest {
-	return &vacationRequest{
+// NewVacationRequestService returns a VacationRequestService.
+func NewVacationRequestService(
+	store database.Database,
+	notifier notify.Notifier,
+	logger logrus.FieldLogger,
+) *VacationRequestService {
+	return &VacationRequestService{
 		store:         store,
 		relationStore: database.NewRelationDB(store),
 		notifier:      notifier,
@@ -23,14 +29,17 @@ func NewVacationRequest(store database.Database, notifier notify.Notifier, logge
 	}
 }
 
-type vacationRequest struct {
+// VacationRequestService implements http.HandlerFunc's to operate on VacationRequest
+// resources.
+type VacationRequestService struct {
 	store         database.Database
 	relationStore database.RelationDB
 	notifier      notify.Notifier
 	logger        logrus.FieldLogger
 }
 
-func (v *vacationRequest) Create(w http.ResponseWriter, r *http.Request) {
+// Create reads the given payload and creates a store representation accordingly.
+func (v *VacationRequestService) Create(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "create")
 	logger.Info("create new vacation-request")
 	var vr model.VacationRequest
@@ -77,8 +86,10 @@ func (v *vacationRequest) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (v *vacationRequest) GetByID(w http.ResponseWriter, r *http.Request) {
-	logger := v.logger.WithField("component", "read")
+// GetByID extracts a VacationRequestID from URL and writes all user information
+// into the given response writer.
+func (v *VacationRequestService) GetByID(w http.ResponseWriter, r *http.Request) {
+	logger := v.logger.WithField("method", "read")
 	logger.Info("get vacation-request by id")
 	vrID, err := extractVacationRequestID(r)
 	if err != nil {
@@ -100,8 +111,10 @@ func (v *vacationRequest) GetByID(w http.ResponseWriter, r *http.Request) {
 	v.logger.Info("get vacation-request with id: ", vR)
 }
 
-func (v *vacationRequest) Approve(w http.ResponseWriter, r *http.Request) {
-	logger := v.logger.WithField("component", "approve")
+// Approve checks if a user has the necessary permissions to approve a request.
+// If this is the case, a confirmed Vacation entry is created in the store.
+func (v *VacationRequestService) Approve(w http.ResponseWriter, r *http.Request) {
+	logger := v.logger.WithField("method", "approve")
 	vrID, err := extractVacationRequestID(r)
 	if err != nil {
 		logger.Error(err)
@@ -188,7 +201,8 @@ func (v *vacationRequest) Approve(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (v *vacationRequest) List(w http.ResponseWriter, r *http.Request) {
+// List retuns a list of all VacationRequests available on the internal store.
+func (v *VacationRequestService) List(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "list")
 	logger.Info("retrieve vacation-request list")
 	list, err := v.store.ListVacationRequests(r.Context())
@@ -205,7 +219,9 @@ func (v *vacationRequest) List(w http.ResponseWriter, r *http.Request) {
 	v.logger.Info("get list of vacation-requests")
 }
 
-func (v *vacationRequest) Update(w http.ResponseWriter, r *http.Request) {
+// Update reads new VacationRequest information from the request body and
+// updates the store representation accordingly.
+func (v *VacationRequestService) Update(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "update")
 	logger.Info("update vacation-request")
 	var vr model.VacationRequest
@@ -250,7 +266,8 @@ func (v *vacationRequest) Update(w http.ResponseWriter, r *http.Request) {
 	v.logger.Info("update vacation-request with id: ", newVR.ID)
 }
 
-func (v *vacationRequest) Delete(w http.ResponseWriter, r *http.Request) {
+// Delete a VacationRequest associated to the given VacationRequestID in the URL.
+func (v *VacationRequestService) Delete(w http.ResponseWriter, r *http.Request) {
 	logger := v.logger.WithField("method", "delete")
 	logger.Info("delete vacation-request")
 	vrID, err := extractVacationRequestID(r)

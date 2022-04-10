@@ -12,15 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
+// NewTokenizer returns a new Tokenizer.
 func NewTokenizer(hmacSecret []byte, validity time.Duration) *Tokenizer {
 	return &Tokenizer{hmacSecret: hmacSecret, validity: validity}
 }
 
+// Tokenizer contains a hmacSecret and a validity duration to verify and
+// generate new tokens.
 type Tokenizer struct {
 	hmacSecret []byte
 	validity   time.Duration
 }
 
+// Generate a new jwt token for the given user.
+// UserID and TeamID is stored in UserClaims.
 func (t *Tokenizer) Generate(u *model.User) (string, error) {
 	now := time.Now().UTC()
 	teamID := ""
@@ -50,6 +55,8 @@ func (t *Tokenizer) Generate(u *model.User) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(t.hmacSecret)
 }
 
+// Valid extracts userID and teamID from a given token.
+// If the token is invalid or expired, an error is returned.
 func (t *Tokenizer) Valid(token string) (userID, teamID string, err error) {
 	claims := &UserClaims{}
 	// Parse the JWT string and store the result in `claims`.
@@ -62,6 +69,7 @@ func (t *Tokenizer) Valid(token string) (userID, teamID string, err error) {
 	return claims.UserID, claims.TeamID, err
 }
 
+// UserClaims is a custom claim type.
 type UserClaims struct {
 	jwt.StandardClaims
 
@@ -69,6 +77,10 @@ type UserClaims struct {
 	TeamID string
 }
 
+// Valid checks if a valid UserID exists and validates time based claims
+// "exp, iat, nbf". There is no accounting for clock skew.
+// As well, if any of the above claims are not in the token, it will still
+// be considered a valid claim.
 func (u *UserClaims) Valid() error {
 	if _, err := uuid.Parse(u.UserID); err != nil {
 		return err

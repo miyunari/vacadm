@@ -6,25 +6,30 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+
+	"github.com/MninaTB/vacadm/pkg/database"
 )
 
-func NewVacation(store database.Database, logger logrus.FieldLogger) *vacation {
-	return &vacation{
+// NewVacation returns a VacationService.
+func NewVacationService(store database.Database, logger logrus.FieldLogger) *VacationService {
+	return &VacationService{
 		store:  store,
 		logger: logger.WithField("component", "vacation-service"),
 	}
 }
 
-type vacation struct {
+// VacationService implements http.HandlerFunc's to operate on user resources.
+type VacationService struct {
 	store  database.Database
 	logger logrus.FieldLogger
 }
 
-func (v *vacation) GetByID(w http.ResponseWriter, r *http.Request) {
-	logger := v.logger.WithField("component", "read")
+// GetByID extracts a vacationID from URL and writes all user information into the
+// given response writer.
+func (v *VacationService) GetByID(w http.ResponseWriter, r *http.Request) {
+	logger := v.logger.WithField("method", "read")
 	logger.Info("get vacation by id")
 	vacID, err := extractVacationID(r)
 	if err != nil {
@@ -46,8 +51,9 @@ func (v *vacation) GetByID(w http.ResponseWriter, r *http.Request) {
 	v.logger.Info("get vacation with id: ", vacID)
 }
 
-func (v *vacation) List(w http.ResponseWriter, r *http.Request) {
-	logger := v.logger.WithField("component", "list")
+// List retuns a list of all vacations available on the internal store.
+func (v *VacationService) List(w http.ResponseWriter, r *http.Request) {
+	logger := v.logger.WithField("method", "list")
 	logger.Info("get vacation list")
 	list, err := v.store.ListVacations(r.Context())
 	if err != nil {
@@ -88,8 +94,9 @@ func (v *vacation) List(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (v *vacation) Delete(w http.ResponseWriter, r *http.Request) {
-	logger := v.logger.WithField("component", "delete")
+// Delete a vacation associated to the given vacationID in the URL.
+func (v *VacationService) Delete(w http.ResponseWriter, r *http.Request) {
+	logger := v.logger.WithField("method", "delete")
 	logger.Info("delete vacation")
 	vacID, err := extractVacationID(r)
 	if err != nil {

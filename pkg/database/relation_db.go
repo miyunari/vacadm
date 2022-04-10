@@ -25,6 +25,8 @@ type relationDB struct {
 }
 
 // IsParentUser verifies if the given parentID is parent of userID in some form.
+// Parent is recursive in this case. This means that the parent of the parent is
+// also valid.
 func (r *relationDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
 	u, err := r.db.GetUserByID(ctx, userID)
 	if err != nil {

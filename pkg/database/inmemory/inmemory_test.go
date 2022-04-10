@@ -1157,31 +1157,31 @@ func TestInmemoryDB_DeleteVacationRequest(t *testing.T) {
 	}
 }
 
-func TestInmemoryDB_CreateVacationRessource(t *testing.T) {
+func TestInmemoryDB_CreateVacationResource(t *testing.T) {
 	tt := []struct {
 		name                   string
-		vacationRessource      *model.VacationRessource
-		vacationRessourceStore []*model.VacationRessource
-		vacationRessourceCount int
+		vacationResource      *model.VacationResource
+		vacationResourceStore []*model.VacationResource
+		vacationResourceCount int
 		wantErr                bool
 	}{
 		{
 			name:                   "missing userID",
-			vacationRessource:      &model.VacationRessource{},
-			vacationRessourceCount: 1,
+			vacationResource:      &model.VacationResource{},
+			vacationResourceCount: 1,
 			wantErr:                true,
 		},
 		{
 			name: "creation matches parent",
-			vacationRessourceStore: []*model.VacationRessource{
+			vacationResourceStore: []*model.VacationResource{
 				{
 					ID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
 				},
 			},
-			vacationRessource: &model.VacationRessource{
+			vacationResource: &model.VacationResource{
 				UserID: "some-user-id",
 			},
-			vacationRessourceCount: 2,
+			vacationResourceCount: 2,
 			wantErr:                false,
 		},
 	}
@@ -1189,30 +1189,30 @@ func TestInmemoryDB_CreateVacationRessource(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			db := NewInmemoryDB()
-			if tc.vacationRessourceStore != nil {
-				db.vacationRessourceStore = tc.vacationRessourceStore
+			if tc.vacationResourceStore != nil {
+				db.vacationResourceStore = tc.vacationResourceStore
 			}
-			newVacationRessource, err := db.CreateVacationRessource(context.Background(), tc.vacationRessource)
+			newVacationResource, err := db.CreateVacationResource(context.Background(), tc.vacationResource)
 			if err != nil && !tc.wantErr {
 				t.Fatal(err)
 			} else if err != nil && tc.wantErr {
 				return
 			}
 
-			if tc.vacationRessourceCount != len(db.vacationRessourceStore) {
-				t.Fatalf("invalid number of vacationRessource in store, want: %d, got: %d",
-					tc.vacationRessourceCount, len(db.vacationRessourceStore),
+			if tc.vacationResourceCount != len(db.vacationResourceStore) {
+				t.Fatalf("invalid number of vacationResource in store, want: %d, got: %d",
+					tc.vacationResourceCount, len(db.vacationResourceStore),
 				)
 			}
 
 			// NOTE: check if uuid is set
-			_, err = uuid.Parse(newVacationRessource.ID)
+			_, err = uuid.Parse(newVacationResource.ID)
 			if err != nil {
 				t.Error(err)
 			}
 
 			// NOTE: check if createdAt timestamp is set
-			if newVacationRessource.CreatedAt == nil {
+			if newVacationResource.CreatedAt == nil {
 				t.Error("missing timestamp created_at")
 			}
 
@@ -1222,36 +1222,36 @@ func TestInmemoryDB_CreateVacationRessource(t *testing.T) {
 			}, cmp.Ignore())
 
 			// NOTE: compare original struct, ignore ID and CreatedAt (should be different)
-			if !cmp.Equal(tc.vacationRessource, newVacationRessource, ignoreFields) {
-				t.Fatal(cmp.Diff(tc.vacationRessource, newVacationRessource, ignoreFields))
+			if !cmp.Equal(tc.vacationResource, newVacationResource, ignoreFields) {
+				t.Fatal(cmp.Diff(tc.vacationResource, newVacationResource, ignoreFields))
 			}
 		})
 	}
 }
 
-func TestInmemoryDB_GetVacationRessourceByID(t *testing.T) {
+func TestInmemoryDB_GetVacationResourceByID(t *testing.T) {
 	tt := []struct {
 		name                   string
-		vacationRessourceID    string
-		vacationRessourceStore []*model.VacationRessource
-		expect                 *model.VacationRessource
+		vacationResourceID    string
+		vacationResourceStore []*model.VacationResource
+		expect                 *model.VacationResource
 		wantErr                bool
 	}{
 		{
-			name:                "vacationRessource does not exist",
-			vacationRessourceID: "does-not-exist",
+			name:                "vacationResource does not exist",
+			vacationResourceID: "does-not-exist",
 			wantErr:             true,
 		},
 		{
-			name: "get vacationRessource by id as expected",
-			vacationRessourceStore: []*model.VacationRessource{
+			name: "get vacationResource by id as expected",
+			vacationResourceStore: []*model.VacationResource{
 				{
 					ID:     "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
 					UserID: "valid-user-id",
 				},
 			},
-			vacationRessourceID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
-			expect: &model.VacationRessource{
+			vacationResourceID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+			expect: &model.VacationResource{
 				ID:     "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
 				UserID: "valid-user-id",
 			},
@@ -1262,27 +1262,27 @@ func TestInmemoryDB_GetVacationRessourceByID(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			db := NewInmemoryDB()
-			if tc.vacationRessourceStore != nil {
-				db.vacationRessourceStore = tc.vacationRessourceStore
+			if tc.vacationResourceStore != nil {
+				db.vacationResourceStore = tc.vacationResourceStore
 			}
-			newVacationRessource, err := db.GetVacationRessourceByID(context.Background(), tc.vacationRessourceID)
+			newVacationResource, err := db.GetVacationResourceByID(context.Background(), tc.vacationResourceID)
 			if err != nil && !tc.wantErr {
 				t.Fatal(err)
 			} else if err != nil && tc.wantErr {
 				return
 			}
 
-			if !cmp.Equal(tc.expect, newVacationRessource) {
-				t.Fatal(cmp.Diff(tc.expect, newVacationRessource))
+			if !cmp.Equal(tc.expect, newVacationResource) {
+				t.Fatal(cmp.Diff(tc.expect, newVacationResource))
 			}
 		})
 	}
 }
 
-func TestInmemoryDB_ListVacationRessource(t *testing.T) {
+func TestInmemoryDB_ListVacationResource(t *testing.T) {
 	tt := []struct {
 		name                   string
-		vacationRessourceStore []*model.VacationRessource
+		vacationResourceStore []*model.VacationResource
 		wantErr                bool
 	}{
 		{
@@ -1290,8 +1290,8 @@ func TestInmemoryDB_ListVacationRessource(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "list vacationRessources as expected",
-			vacationRessourceStore: []*model.VacationRessource{
+			name: "list vacationResources as expected",
+			vacationResourceStore: []*model.VacationResource{
 				{
 					ID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
 				},
@@ -1306,43 +1306,43 @@ func TestInmemoryDB_ListVacationRessource(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			db := NewInmemoryDB()
-			if tc.vacationRessourceStore != nil {
-				db.vacationRessourceStore = tc.vacationRessourceStore
+			if tc.vacationResourceStore != nil {
+				db.vacationResourceStore = tc.vacationResourceStore
 			}
-			vacationRessources, err := db.ListVacationRessource(context.Background())
+			vacationResources, err := db.ListVacationResource(context.Background())
 			if err != nil && !tc.wantErr {
 				t.Fatal(err)
 			} else if err != nil && tc.wantErr {
 				return
 			}
 
-			if !cmp.Equal(db.vacationRessourceStore, vacationRessources) {
-				t.Fatal(cmp.Diff(db.vacationRessourceStore, vacationRessources))
+			if !cmp.Equal(db.vacationResourceStore, vacationResources) {
+				t.Fatal(cmp.Diff(db.vacationResourceStore, vacationResources))
 			}
 		})
 	}
 }
 
-func TestInmemoryDB_DeleteVacationRessource(t *testing.T) {
+func TestInmemoryDB_DeleteVacationResource(t *testing.T) {
 	tt := []struct {
 		name                   string
-		vacationRessourceID    string
-		vacationRessourceStore []*model.VacationRessource
+		vacationResourceID    string
+		vacationResourceStore []*model.VacationResource
 		wantErr                bool
 	}{
 		{
-			name:                "vacationRessource does not exist",
-			vacationRessourceID: "does-not-exist",
+			name:                "vacationResource does not exist",
+			vacationResourceID: "does-not-exist",
 			wantErr:             true,
 		},
 		{
-			name: "get vacationRessource by id as expected",
-			vacationRessourceStore: []*model.VacationRessource{
+			name: "get vacationResource by id as expected",
+			vacationResourceStore: []*model.VacationResource{
 				{
 					ID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
 				},
 			},
-			vacationRessourceID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
+			vacationResourceID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
 			wantErr:             false,
 		},
 	}
@@ -1350,19 +1350,19 @@ func TestInmemoryDB_DeleteVacationRessource(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			db := NewInmemoryDB()
-			if tc.vacationRessourceStore != nil {
-				db.vacationRessourceStore = tc.vacationRessourceStore
+			if tc.vacationResourceStore != nil {
+				db.vacationResourceStore = tc.vacationResourceStore
 			}
-			expectCount := len(tc.vacationRessourceStore) - 1
-			err := db.DeleteVacationRessource(context.Background(), tc.vacationRessourceID)
+			expectCount := len(tc.vacationResourceStore) - 1
+			err := db.DeleteVacationResource(context.Background(), tc.vacationResourceID)
 			if err != nil && !tc.wantErr {
 				t.Fatal(err)
 			} else if err != nil && tc.wantErr {
 				return
 			}
 
-			if expectCount != len(db.vacationRessourceStore) {
-				t.Fatalf("invalid count, want: %d, got: %d", expectCount, len(db.vacationRessourceStore))
+			if expectCount != len(db.vacationResourceStore) {
+				t.Fatalf("invalid count, want: %d, got: %d", expectCount, len(db.vacationResourceStore))
 			}
 		})
 	}

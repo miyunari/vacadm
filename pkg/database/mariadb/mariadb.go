@@ -182,8 +182,8 @@ const (
 		WHERE id = ?
 	`
 
-	vacationRessourceCreate = `
-		INSERT INTO vacation_ressource (
+	vacationResourceCreate = `
+		INSERT INTO vacation_resource (
 			id,
 			user_id, yearly_days,
 			created_at
@@ -195,22 +195,22 @@ const (
 		) RETURNING id, created_at
 	`
 
-	basicVacationRessourceSelect = `
+	basicVacationResourceSelect = `
 		SELECT
 			id,
 			user_id,
 			yearly_days,
 			from, to,
 			created_at, updated_at,
-		FROM vacation_ressource
+		FROM vacation_resource
 	`
 
-	vacationRessourceSelectByID = basicVacationRessourceSelect + `
+	vacationResourceSelectByID = basicVacationResourceSelect + `
 		WHERE id = ?
 	`
 
-	vacationRessourceUpdate = `
-		UPDATE vacation_ressource
+	vacationResourceUpdate = `
+		UPDATE vacation_resource
 		SET
 			user_id = ?,
 			yearly_days = ?,
@@ -219,8 +219,8 @@ const (
 		WHERE id = ?
 	`
 
-	vacationRessourceDelete = `
-		UPDATE vacationRessource
+	vacationResourceDelete = `
+		UPDATE vacationResource
 		SET
 			updated_at = NOW(),
 			deleted_at = Now()
@@ -748,10 +748,10 @@ func (m *MariaDB) DeleteVacationRequest(ctx context.Context, uuid string) error 
 	return err
 }
 
-// CreateVacationRessource stores an internal copy of the given vacationRessource.
-// Returns copy with assigned vacationRessourceID.
-func (m *MariaDB) CreateVacationRessource(ctx context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
-	row, err := m.db.QueryContext(ctx, vacationRessourceCreate, v.UserID, v.YearlyDays)
+// CreateVacationResource stores an internal copy of the given vacationResource.
+// Returns copy with assigned vacationResourceID.
+func (m *MariaDB) CreateVacationResource(ctx context.Context, v *model.VacationResource) (*model.VacationResource, error) {
+	row, err := m.db.QueryContext(ctx, vacationResourceCreate, v.UserID, v.YearlyDays)
 	if err != nil {
 		return nil, err
 	}
@@ -771,14 +771,14 @@ func (m *MariaDB) CreateVacationRessource(ctx context.Context, v *model.Vacation
 	return v, nil
 }
 
-// GetVacationRessourceByID returns the associated vacationRessource by the given id.
-func (m *MariaDB) GetVacationRessourceByID(ctx context.Context, uuid string) (*model.VacationRessource, error) {
-	row := m.db.QueryRowContext(ctx, vacationRessourceSelectByID, uuid)
+// GetVacationResourceByID returns the associated vacationResource by the given id.
+func (m *MariaDB) GetVacationResourceByID(ctx context.Context, uuid string) (*model.VacationResource, error) {
+	row := m.db.QueryRowContext(ctx, vacationResourceSelectByID, uuid)
 	err := row.Err()
 	if err != nil {
 		return nil, err
 	}
-	v := &model.VacationRessource{}
+	v := &model.VacationResource{}
 	var userID sql.NullString
 	var createdAt, updatedAt, from, to sql.NullTime
 	err = row.Scan(&v.ID, &userID, &createdAt, &updatedAt, &from, &to, v.YearlyDays)
@@ -803,17 +803,17 @@ func (m *MariaDB) GetVacationRessourceByID(ctx context.Context, uuid string) (*m
 	return v, nil
 }
 
-// ListVacationRessource returns a copy of the internal vacationRessource list.
-func (m *MariaDB) ListVacationRessource(ctx context.Context) ([]*model.VacationRessource, error) {
-	allVacationRessources := make([]*model.VacationRessource, 0)
-	rows, err := m.db.QueryContext(ctx, basicVacationRessourceSelect)
+// ListVacationResource returns a copy of the internal vacationResource list.
+func (m *MariaDB) ListVacationResource(ctx context.Context) ([]*model.VacationResource, error) {
+	allVacationResources := make([]*model.VacationResource, 0)
+	rows, err := m.db.QueryContext(ctx, basicVacationResourceSelect)
 	if err != nil {
 		return nil, err
 	}
 	var userID sql.NullString
 	var createdAt, updatedAt, from, to sql.NullTime
 	for rows.Next() {
-		v := model.VacationRessource{}
+		v := model.VacationResource{}
 		err = rows.Scan(&v.ID, &createdAt, &updatedAt, &from, &to, &userID)
 		if err != nil {
 			return nil, err
@@ -830,18 +830,18 @@ func (m *MariaDB) ListVacationRessource(ctx context.Context) ([]*model.VacationR
 		if userID.Valid {
 			v.UserID = userID.String
 		}
-		allVacationRessources = append(allVacationRessources, &v)
+		allVacationResources = append(allVacationResources, &v)
 	}
-	return allVacationRessources, nil
+	return allVacationResources, nil
 }
 
-// UpdateVacationRessource updates vacationRessource entry by the given vacationRessource.
-func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
+// UpdateVacationResource updates vacationResource entry by the given vacationResource.
+func (m *MariaDB) UpdateVacationResource(ctx context.Context, v *model.VacationResource) (*model.VacationResource, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
-	_, err = tx.ExecContext(ctx, vacationRessourceUpdate, v.UserID, v.YearlyDays, v.From, v.To, v.ID)
+	_, err = tx.ExecContext(ctx, vacationResourceUpdate, v.UserID, v.YearlyDays, v.From, v.To, v.ID)
 	if err != nil {
 		if errTX := tx.Rollback(); err != nil {
 			return nil, errTX
@@ -865,9 +865,9 @@ func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.Vacation
 	return v, nil
 }
 
-// DeleteVacationRessource removes vacationRessource entry by the given id.
-func (m *MariaDB) DeleteVacationRessource(ctx context.Context, uuid string) error {
-	row := m.db.QueryRowContext(ctx, vacationRessourceDelete, uuid)
+// DeleteVacationResource removes vacationResource entry by the given id.
+func (m *MariaDB) DeleteVacationResource(ctx context.Context, uuid string) error {
+	row := m.db.QueryRowContext(ctx, vacationResourceDelete, uuid)
 	err := row.Err()
 	if err != nil {
 		return err

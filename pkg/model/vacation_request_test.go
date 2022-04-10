@@ -16,7 +16,7 @@ func TestVacationRequest_Copy(t *testing.T) {
 		{
 			name: "expected",
 			original: &VacationRequest{
-				ID:        "test-vacation-ressource-id",
+				ID:        "test-vacation-resource-id",
 				UserID:    "test-user-id",
 				From:      now.Add(time.Minute),
 				To:        now.Add(time.Hour),
