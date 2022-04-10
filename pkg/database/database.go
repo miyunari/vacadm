@@ -44,6 +44,8 @@ type Database interface {
 	// CreateVacation stores an internal copy of the given vacation resource.
 	// Returns copy with assigned vacationID.
 	CreateVacation(ctx context.Context, vacation *model.Vacation) (*model.Vacation, error)
+	// GetVacationsByTeamID returns the associated vacation by the given teamID.
+	GetVacationsByTeamID(ctx context.Context, teamID string) ([]*model.Vacation, error)
 	// GetVacationByID returns the associated vacation by the given id.
 	GetVacationByID(ctx context.Context, vacationID string) (*model.Vacation, error)
 	// ListVacations returns a copy of the internal vacation list.

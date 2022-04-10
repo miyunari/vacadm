@@ -73,7 +73,7 @@ func main() {
 	}
 	t := jwt.NewTokenizer(secret, 365*24*time.Hour)
 	router.Path("/token/new/{userID}").Methods(http.MethodGet).HandlerFunc(token.NewTokenService(db, t).Refresh)
-	apiv1 := v1.NewServer(db, notifier, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
+	apiv1 := v1.NewServer(db, notifier, t, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
 	const pathPrefixV1 = "/v1"
 	router.Handle(fmt.Sprintf("%s/{dummy}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
 

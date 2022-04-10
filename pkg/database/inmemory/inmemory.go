@@ -317,6 +317,38 @@ func (i *InmemoryDB) GetVacationByID(_ context.Context, id string) (*model.Vacat
 	return nil, errors.New("no vacation found")
 }
 
+// GetVacationsByUserID returns list of vacations of one user by given userID.
+func (i *InmemoryDB) GetVacationsByUserID(_ context.Context, id string) ([]*model.Vacation, error) {
+	i.muVacationStore.Lock()
+	defer i.muVacationStore.Unlock()
+	result := []*model.Vacation{}
+	for _, v := range i.vacationStore {
+		if id != v.UserID {
+			continue
+		}
+		result = append(result, v)
+	}
+	return result, nil
+}
+
+// GetVacationByTeamID returns the list of vacations of one team by given teamID.
+func (i *InmemoryDB) GetVacationsByTeamID(ctx context.Context, tID string) ([]*model.Vacation, error) {
+	// NOTE: mutex not needed, since no direct access on table
+	users, err := i.ListTeamUsers(ctx, tID)
+	if err != nil {
+		return nil, err
+	}
+	result := []*model.Vacation{}
+	for _, u := range users {
+		vacs, err := i.GetVacationsByUserID(ctx, u.ID)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, vacs...)
+	}
+	return result, nil
+}
+
 // ListVacations returns a copy of the internal vacation list.
 func (i *InmemoryDB) ListVacations(_ context.Context) ([]*model.Vacation, error) {
 	i.muVacationStore.Lock()

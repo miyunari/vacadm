@@ -3,6 +3,7 @@ package mariadb
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -565,6 +566,11 @@ func (m *MariaDB) GetVacationByID(ctx context.Context, uuid string) (*model.Vaca
 		v.ApprovedBy = &approvedID.String
 	}
 	return v, nil
+}
+
+// GetVacationByTeamID returns the list of vacations of one team by given teamID.
+func (m *MariaDB) GetVacationsByTeamID(ctx context.Context, tID string) ([]*model.Vacation, error) {
+	return nil, fmt.Errorf("not implemented yet")
 }
 
 // ListVacations returns a copy of the internal vacation list.

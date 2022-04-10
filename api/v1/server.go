@@ -14,26 +14,37 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type TokenValidator interface {
+	Valid(token string) (userID string, teamID string, err error)
+}
+
 type server struct {
 	logger   logrus.FieldLogger
 	db       database.Database
 	mw       []mux.MiddlewareFunc
+	tv       TokenValidator
 	notifier notify.Notifier
 }
 
-func NewServer(db database.Database, notifier notify.Notifier, middleware ...mux.MiddlewareFunc) http.Handler {
+func NewServer(
+	db database.Database,
+	notifier notify.Notifier,
+	tokenValidator TokenValidator,
+	middleware ...mux.MiddlewareFunc,
+) http.Handler {
 	return &server{
 		logger:   logrus.New().WithField("api", "v1"),
 		mw:       middleware,
 		db:       db,
 		notifier: notifier,
+		tv:       tokenValidator,
 	}
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	usrSvc := user.NewUserService(s.db, s.logger)
 
-	teamSvc := team.NewTeamService(s.db, s.logger)
+	teamSvc := team.NewTeamService(s.db, s.logger, s.tv)
 
 	vacSvc := vacation.NewVacation(s.db, s.logger)
 
@@ -51,9 +62,8 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.Path("/team").Methods(http.MethodPut).HandlerFunc(teamSvc.Create)
 	router.Path("/team/{teamID}").Methods(http.MethodGet).HandlerFunc(teamSvc.GetByID)
 	router.Path("/team/{teamID}/list-users").Methods(http.MethodGet).HandlerFunc(teamSvc.ListTeamUsers)
-	// team/{teamID}/vacation/ressources
-	// team/{teamID}/vacation
-	// router.Path("/team/{teamID}/capacity").Methods(http.MethodGet).HandlerFunc(teamSvc.ListCapacity)
+	router.Path("/team/list-vacation").Methods(http.MethodGet).HandlerFunc(teamSvc.ListCapacity)
+
 	router.Path("/team").Methods(http.MethodGet).HandlerFunc(teamSvc.List)
 	router.Path("/team/{teamID}").Methods(http.MethodPatch).HandlerFunc(teamSvc.Update)
 	router.Path("/team/{teamID}").Methods(http.MethodDelete).HandlerFunc(teamSvc.Delete)
