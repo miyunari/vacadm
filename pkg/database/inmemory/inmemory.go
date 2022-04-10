@@ -51,6 +51,9 @@ type InmemoryDB struct {
 func (i *InmemoryDB) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
 	i.muUserStore.Lock()
 	defer i.muUserStore.Unlock()
+	if user.Email == "" {
+		return nil, fmt.Errorf("missing email address")
+	}
 	for _, e := range i.userStore {
 		if e.Email == user.Email {
 			return nil, fmt.Errorf("email address must be unique")
@@ -60,7 +63,7 @@ func (i *InmemoryDB) CreateUser(ctx context.Context, user *model.User) (*model.U
 	if user.ParentID != nil {
 		var foundParent bool
 		for _, p := range i.userStore {
-			if *p.ParentID == *user.ParentID {
+			if p.ID == *user.ParentID {
 				foundParent = true
 				break
 			}
