@@ -112,6 +112,8 @@ issues:
     - path: _test\.go
       linters:
         - gomnd
+        - funlen
+        - goconst
 
 run:
   timeout: 5m
