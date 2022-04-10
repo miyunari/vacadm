@@ -281,8 +281,26 @@ func (i *InmemoryDB) DeleteTeam(_ context.Context, id string) error {
 
 // CreateVacation stores an internal copy of the given vacation resource.
 // Returns copy with assigned vacationID.
-func (i *InmemoryDB) CreateVacation(ctx context.Context, vacation *model.Vacation) (*model.Vacation, error) {
-	return nil, fmt.Errorf("not implemented yet")
+func (i *InmemoryDB) CreateVacation(ctx context.Context, v *model.Vacation) (*model.Vacation, error) {
+	i.muVacationStore.Lock()
+	defer i.muVacationStore.Unlock()
+
+	if v.UserID == "" {
+		return nil, fmt.Errorf("missing userID")
+	}
+
+	if v.ApprovedBy == nil {
+		return nil, fmt.Errorf("missing approverID")
+	}
+
+	createdAt := time.Now()
+	v.CreatedAt = &createdAt
+	v.ID = uuid.NewString()
+	vacationCopy := v.Copy()
+
+	i.logger.Info("create vacation with id: ", v.ID)
+	i.vacationStore = append(i.vacationStore, vacationCopy)
+	return v, nil
 }
 
 // GetVacationByID returns the associated vacation by the given id.
@@ -331,6 +349,9 @@ func (i *InmemoryDB) DeleteVacation(_ context.Context, id string) error {
 func (i *InmemoryDB) CreateVacationRequest(_ context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
 	i.muVacationRequestStore.Lock()
 	defer i.muVacationRequestStore.Unlock()
+	if v.UserID == "" {
+		return nil, fmt.Errorf("missing userID")
+	}
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
@@ -393,6 +414,9 @@ func (i *InmemoryDB) DeleteVacationRequest(_ context.Context, id string) error {
 func (i *InmemoryDB) CreateVacationRessource(_ context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
 	i.muVacationRessourceStore.Lock()
 	defer i.muVacationRessourceStore.Unlock()
+	if v.UserID == "" {
+		return nil, fmt.Errorf("missing userID")
+	}
 	createdAt := time.Now()
 	v.CreatedAt = &createdAt
 	v.ID = uuid.NewString()
