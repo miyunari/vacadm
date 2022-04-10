@@ -129,11 +129,28 @@ func (i *InmemoryDB) UpdateUser(_ context.Context, user *model.User) (*model.Use
 		if user.Email != "" {
 			i.userStore[x].Email = user.Email
 		}
-		i.userStore[x].FirstName = user.FirstName
-		i.userStore[x].LastName = user.LastName
+		if user.ParentID != nil {
+			var found bool
+			for _, u := range i.userStore {
+				if u.ID == *user.ParentID {
+					i.userStore[x].ParentID = user.ParentID
+					found = true
+					break
+				}
+			}
+			if !found {
+				return nil, fmt.Errorf("parent with id: '%s' not found", *user.ParentID)
+			}
+		}
+		if user.FirstName != "" {
+			i.userStore[x].FirstName = user.FirstName
+		}
+		if user.LastName != "" {
+			i.userStore[x].LastName = user.LastName
+		}
 		i.userStore[x].UpdatedAt = &updatededAt
 		i.logger.Info("update user with id: ", user.ID)
-		return i.userStore[x], nil
+		return i.userStore[x].Copy(), nil
 	}
 	i.logger.Error("update failed: no user found")
 	return nil, errors.New("update failed: no user found")
