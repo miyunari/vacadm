@@ -158,7 +158,6 @@ func (v *vacationRequest) Update(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	v.logger.Info("update vacation-request with id: ", newVR.ID)
-
 }
 
 func (v *vacationRequest) Delete(w http.ResponseWriter, r *http.Request) {

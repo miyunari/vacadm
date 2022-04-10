@@ -232,13 +232,19 @@ paths:
       tags: 
         - User
       responses:
-        "200":
+        "201":
           description: "user successfully created"
           content: 
             application/json:
               schema:
                 $ref: "#/components/schemas/User_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "5XX":
+          description: "Unexpected error."
+
     get:
       summary: List all users
       description: ""
@@ -253,7 +259,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User_Response"
-    
+        "401":
+          description: "Authorization information is missing or invalid."
+        "5XX":
+          description: "Unexpected error."
+
+
   /user/{user_id}:
     get:
       summary: Gets the user by id
@@ -273,7 +284,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User_Response"
-  
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A user with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+
+
     patch:
       summary: Update the user by id
       description: ""
@@ -297,7 +317,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A user with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+
     delete:
       summary: delete the user by id
       description: ""
@@ -310,8 +338,16 @@ paths:
       tags:
         - User
       responses:
-        "200":
+        "202":
           description: "user successfully deleted"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A user with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
 
   /team:
     put:
@@ -325,13 +361,19 @@ paths:
       tags: 
         - Team
       responses:
-        "200":
+        "201":
           description: "team successfully created"
           content: 
             application/json:
               schema:
                 $ref: "#/components/schemas/Team_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "5XX":
+          description: "Unexpected error."
+
     get:
       summary: List all teams
       description: ""
@@ -346,7 +388,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Team_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "5XX":
+          description: "Unexpected error."
+
+
   /team/{team_id}:
     get:
       summary: Gets the team by id
@@ -366,7 +415,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Team_Response"
-  
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A team with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+
     patch:
       summary: Update the team by id
       description: ""
@@ -390,7 +447,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Team_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A team with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+
     delete:
       summary: delete the team by id
       description: ""
@@ -403,8 +468,16 @@ paths:
       tags:
         - Team
       responses:
-        "200":
+        "202":
           description: "team successfully deleted"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A team with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
 
   /team/{team_id}/list-users:
     get:
@@ -427,6 +500,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User_Response"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "5XX":
+          description: "Unexpected error."
 
   /user/{user_id}/vacation:    
     get:
@@ -443,7 +522,15 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Vacation_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A Vacation with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+
   /user/{user_id}/vacation/{vacation_id}:
     get:
       summary: Gets the vacation by id
@@ -463,7 +550,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation_Response"
-      
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
     delete:
       summary: delete the vacation by id
       description: ""
@@ -476,8 +571,16 @@ paths:
       tags:
         - Vacation
       responses:
-        "200":
+        "202":
           description: "vacation successfully deleted"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
 
   /user/{user_id}/vacation/request:
     put:
@@ -497,7 +600,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation-Request_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
     get:
       summary: List all vacation-requests
       description: ""
@@ -512,7 +623,15 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Vacation-Request_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
   /user/{user_id}/vacation/request/{id}:
     get:
       summary: Gets the vacation-request by id
@@ -532,7 +651,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation-Request_Response"
-  
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
     patch:
       summary: Update the vacation-request by id
       description: ""
@@ -556,7 +683,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation-Request_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
     delete:
       summary: delete the vacation-request by id
       description: ""
@@ -569,8 +704,16 @@ paths:
       tags:
         - Vacation-Request
       responses:
-        "200":
+        "202":
           description: "vacation-request successfully deleted"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
 
   /user/{user_id}/vacation/ressource:
     put:
@@ -584,12 +727,20 @@ paths:
       tags: 
         - Vacation-Ressource
       responses:
-        "200":
+        "201":
           description: "vacation-ressource successfully created"
           content: 
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation-Ressource_Response"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A user with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
     
     get:
       summary: List all vacation-ressources
@@ -605,7 +756,15 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Vacation-Ressource_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A user with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+
   /user/{user_id}/vacation/ressource/{id}:
     get:
       summary: Gets the vacation-ressource of one user by user id and vacation-ressource id
@@ -625,7 +784,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation-Ressource_Response"
-  
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
     patch:
       summary: Update the vacation-ressource by user id and vacation id
       description: ""
@@ -649,7 +816,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Vacation-Ressource_Response"
-    
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
     delete:
       summary: delete the vacation-ressource by user id and vacation id
       description: ""
@@ -662,5 +837,13 @@ paths:
       tags:
         - Vacation-Ressource
       responses:
-        "200":
+        "202":
           description: "vacation-ressource successfully deleted"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."

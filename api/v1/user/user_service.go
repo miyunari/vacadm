@@ -78,7 +78,7 @@ func (u *userService) List(w http.ResponseWriter, r *http.Request) {
 	list, err := u.store.ListUsers(r.Context())
 	if err != nil {
 		logger.Error(err)
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	err = json.NewEncoder(w).Encode(&list)
