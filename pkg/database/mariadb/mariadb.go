@@ -214,6 +214,8 @@ const (
 	`
 )
 
+// NewMariaDB returns initialized MariaDB that fulfills
+// the database interface.
 func NewMariaDB(db *sql.DB) *MariaDB {
 	return &MariaDB{
 		db:     db,
@@ -221,11 +223,15 @@ func NewMariaDB(db *sql.DB) *MariaDB {
 	}
 }
 
+// MariaDB implements the database interface.
 type MariaDB struct {
 	db     *sql.DB
 	logger logrus.FieldLogger
 }
 
+// CreateUser stores an internal copy of the given user, if email address is
+// not already in use, given parentID and/or teamID exists.
+// Returns copy with assigned userID.
 func (m *MariaDB) CreateUser(ctx context.Context, u *model.User) (*model.User, error) {
 	row, err := m.db.QueryContext(ctx, userCreate, u.ParentID, u.TeamID, u.Email, u.FirstName, u.LastName)
 	if err != nil {
@@ -247,6 +253,7 @@ func (m *MariaDB) CreateUser(ctx context.Context, u *model.User) (*model.User, e
 	return u, nil
 }
 
+// GetUserByID returns the associated user by the given id.
 func (m *MariaDB) GetUserByID(ctx context.Context, uuid string) (*model.User, error) {
 	row := m.db.QueryRowContext(ctx, userSelectByID, uuid)
 	err := row.Err()
@@ -275,6 +282,7 @@ func (m *MariaDB) GetUserByID(ctx context.Context, uuid string) (*model.User, er
 	return u, nil
 }
 
+// ListUsers returns a copy of the internal user list.
 func (m *MariaDB) ListUsers(ctx context.Context) ([]*model.User, error) {
 	allusr := make([]*model.User, 0)
 	rows, err := m.db.QueryContext(ctx, basicUserSelect)
@@ -306,6 +314,7 @@ func (m *MariaDB) ListUsers(ctx context.Context) ([]*model.User, error) {
 	return allusr, nil
 }
 
+// UpdateUser updates user entry by the given user.
 func (m *MariaDB) UpdateUser(ctx context.Context, u *model.User) (*model.User, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -335,6 +344,7 @@ func (m *MariaDB) UpdateUser(ctx context.Context, u *model.User) (*model.User, e
 	return u, nil
 }
 
+// DeleteUser removes user entry by the given id.
 func (m *MariaDB) DeleteUser(ctx context.Context, uuid string) error {
 	row := m.db.QueryRowContext(ctx, userDelete, uuid)
 	err := row.Err()
@@ -344,6 +354,8 @@ func (m *MariaDB) DeleteUser(ctx context.Context, uuid string) error {
 	return nil
 }
 
+// CreateTeam stores an internal copy of the given team.
+// Returns copy with assigned teamID.
 func (m *MariaDB) CreateTeam(ctx context.Context, t *model.Team) (*model.Team, error) {
 	row, err := m.db.QueryContext(ctx, teamCreate, t.OwnerID, t.Name)
 	if err != nil {
@@ -365,6 +377,7 @@ func (m *MariaDB) CreateTeam(ctx context.Context, t *model.Team) (*model.Team, e
 	return t, nil
 }
 
+// GetTeamByID returns the associated team by the given id.
 func (m *MariaDB) GetTeamByID(ctx context.Context, uuid string) (*model.Team, error) {
 	row := m.db.QueryRowContext(ctx, teamSelectByID, uuid)
 	err := row.Err()
@@ -386,6 +399,7 @@ func (m *MariaDB) GetTeamByID(ctx context.Context, uuid string) (*model.Team, er
 	return t, nil
 }
 
+// ListTeams returns a copy of the internal team list.
 func (m *MariaDB) ListTeams(ctx context.Context) ([]*model.Team, error) {
 	allTeams := make([]*model.Team, 0)
 	rows, err := m.db.QueryContext(ctx, basicTeamSelect)
@@ -410,6 +424,7 @@ func (m *MariaDB) ListTeams(ctx context.Context) ([]*model.Team, error) {
 	return allTeams, nil
 }
 
+// ListTeamUsers returns a list of users associated by the given teamID
 func (m *MariaDB) ListTeamUsers(ctx context.Context, uuid string) ([]*model.User, error) {
 	teamUser := make([]*model.User, 0)
 	rows, err := m.db.QueryContext(ctx, teamUserSelectByID, uuid)
@@ -441,6 +456,7 @@ func (m *MariaDB) ListTeamUsers(ctx context.Context, uuid string) ([]*model.User
 	return teamUser, nil
 }
 
+// UpdateTeam updates team entry by the given team.
 func (m *MariaDB) UpdateTeam(ctx context.Context, t *model.Team) (*model.Team, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -470,6 +486,7 @@ func (m *MariaDB) UpdateTeam(ctx context.Context, t *model.Team) (*model.Team, e
 	return t, nil
 }
 
+// DeleteTeam removes team entry by the given id.
 func (m *MariaDB) DeleteTeam(ctx context.Context, uuid string) error {
 	row := m.db.QueryRowContext(ctx, teamDelete, uuid)
 	err := row.Err()
@@ -479,6 +496,7 @@ func (m *MariaDB) DeleteTeam(ctx context.Context, uuid string) error {
 	return err
 }
 
+// GetVacationByID returns the associated vacation by the given id.
 func (m *MariaDB) GetVacationByID(ctx context.Context, uuid string) (*model.Vacation, error) {
 	row := m.db.QueryRowContext(ctx, vacationSelectByID, uuid)
 	err := row.Err()
@@ -511,6 +529,7 @@ func (m *MariaDB) GetVacationByID(ctx context.Context, uuid string) (*model.Vaca
 	return v, nil
 }
 
+// ListVacations returns a copy of the internal vacation list.
 func (m *MariaDB) ListVacations(ctx context.Context) ([]*model.Vacation, error) {
 	allVacations := make([]*model.Vacation, 0)
 	rows, err := m.db.QueryContext(ctx, basicVacationSelect)
@@ -546,6 +565,7 @@ func (m *MariaDB) ListVacations(ctx context.Context) ([]*model.Vacation, error) 
 	return allVacations, nil
 }
 
+// DeleteVacation removes vacation entry by the given id.
 func (m *MariaDB) DeleteVacation(ctx context.Context, uuid string) error {
 	row := m.db.QueryRowContext(ctx, vacationDelete, uuid)
 	err := row.Err()
@@ -555,6 +575,8 @@ func (m *MariaDB) DeleteVacation(ctx context.Context, uuid string) error {
 	return err
 }
 
+// CreateVacationRequest stores an internal copy of the given vacationRequest.
+// Returns copy with assigned vacationRequestID.
 func (m *MariaDB) CreateVacationRequest(ctx context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
 	row, err := m.db.QueryContext(ctx, vacationRequestCreate, v.UserID, v.From, v.To)
 	if err != nil {
@@ -578,6 +600,7 @@ func (m *MariaDB) CreateVacationRequest(ctx context.Context, v *model.VacationRe
 	return v, nil
 }
 
+// GetVacationRequestByID returns the associated vacationRequest by the given id.
 func (m *MariaDB) GetVacationRequestByID(ctx context.Context, uuid string) (*model.VacationRequest, error) {
 	row := m.db.QueryRowContext(ctx, vacationRequestSelectByID, uuid)
 	err := row.Err()
@@ -609,6 +632,7 @@ func (m *MariaDB) GetVacationRequestByID(ctx context.Context, uuid string) (*mod
 	return v, nil
 }
 
+// ListVacationRequests returns a copy of the internal vacationRequest list.
 func (m *MariaDB) ListVacationRequests(ctx context.Context) ([]*model.VacationRequest, error) {
 	allVacationRequests := make([]*model.VacationRequest, 0)
 	rows, err := m.db.QueryContext(ctx, basicVacationRequestSelect)
@@ -640,6 +664,7 @@ func (m *MariaDB) ListVacationRequests(ctx context.Context) ([]*model.VacationRe
 	return allVacationRequests, nil
 }
 
+// UpdateVacationRequest updates vacationRequest entry by the given vacationRequest.
 func (m *MariaDB) UpdateVacationRequest(ctx context.Context, v *model.VacationRequest) (*model.VacationRequest, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -669,6 +694,7 @@ func (m *MariaDB) UpdateVacationRequest(ctx context.Context, v *model.VacationRe
 	return v, nil
 }
 
+// DeleteVacationRequest removes vacationRequest entry by the given id.
 func (m *MariaDB) DeleteVacationRequest(ctx context.Context, uuid string) error {
 	row := m.db.QueryRowContext(ctx, vacationRequestDelete, uuid)
 	err := row.Err()
@@ -678,6 +704,8 @@ func (m *MariaDB) DeleteVacationRequest(ctx context.Context, uuid string) error 
 	return err
 }
 
+// CreateVacationRessource stores an internal copy of the given vacationRessource.
+// Returns copy with assigned vacationRessourceID.
 func (m *MariaDB) CreateVacationRessource(ctx context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
 	row, err := m.db.QueryContext(ctx, vacationRessourceCreate, v.UserID, v.YearlyDays)
 	if err != nil {
@@ -699,6 +727,7 @@ func (m *MariaDB) CreateVacationRessource(ctx context.Context, v *model.Vacation
 	return v, nil
 }
 
+// GetVacationRessourceByID returns the associated vacationRessource by the given id.
 func (m *MariaDB) GetVacationRessourceByID(ctx context.Context, uuid string) (*model.VacationRessource, error) {
 	row := m.db.QueryRowContext(ctx, vacationRessourceSelectByID, uuid)
 	err := row.Err()
@@ -730,6 +759,7 @@ func (m *MariaDB) GetVacationRessourceByID(ctx context.Context, uuid string) (*m
 	return v, nil
 }
 
+// ListVacationRessource returns a copy of the internal vacationRessource list.
 func (m *MariaDB) ListVacationRessource(ctx context.Context) ([]*model.VacationRessource, error) {
 	allVacationRessources := make([]*model.VacationRessource, 0)
 	rows, err := m.db.QueryContext(ctx, basicVacationRessourceSelect)
@@ -761,6 +791,7 @@ func (m *MariaDB) ListVacationRessource(ctx context.Context) ([]*model.VacationR
 	return allVacationRessources, nil
 }
 
+// UpdateVacationRessource updates vacationRessource entry by the given vacationRessource.
 func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.VacationRessource) (*model.VacationRessource, error) {
 	tx, err := m.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
@@ -790,6 +821,7 @@ func (m *MariaDB) UpdateVacationRessource(ctx context.Context, v *model.Vacation
 	return v, nil
 }
 
+// DeleteVacationRessource removes vacationRessource entry by the given id.
 func (m *MariaDB) DeleteVacationRessource(ctx context.Context, uuid string) error {
 	row := m.db.QueryRowContext(ctx, vacationRessourceDelete, uuid)
 	err := row.Err()
