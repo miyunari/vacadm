@@ -1159,17 +1159,17 @@ func TestInmemoryDB_DeleteVacationRequest(t *testing.T) {
 
 func TestInmemoryDB_CreateVacationResource(t *testing.T) {
 	tt := []struct {
-		name                   string
+		name                  string
 		vacationResource      *model.VacationResource
 		vacationResourceStore []*model.VacationResource
 		vacationResourceCount int
-		wantErr                bool
+		wantErr               bool
 	}{
 		{
-			name:                   "missing userID",
+			name:                  "missing userID",
 			vacationResource:      &model.VacationResource{},
 			vacationResourceCount: 1,
-			wantErr:                true,
+			wantErr:               true,
 		},
 		{
 			name: "creation matches parent",
@@ -1182,7 +1182,7 @@ func TestInmemoryDB_CreateVacationResource(t *testing.T) {
 				UserID: "some-user-id",
 			},
 			vacationResourceCount: 2,
-			wantErr:                false,
+			wantErr:               false,
 		},
 	}
 
@@ -1231,16 +1231,16 @@ func TestInmemoryDB_CreateVacationResource(t *testing.T) {
 
 func TestInmemoryDB_GetVacationResourceByID(t *testing.T) {
 	tt := []struct {
-		name                   string
+		name                  string
 		vacationResourceID    string
 		vacationResourceStore []*model.VacationResource
-		expect                 *model.VacationResource
-		wantErr                bool
+		expect                *model.VacationResource
+		wantErr               bool
 	}{
 		{
-			name:                "vacationResource does not exist",
+			name:               "vacationResource does not exist",
 			vacationResourceID: "does-not-exist",
-			wantErr:             true,
+			wantErr:            true,
 		},
 		{
 			name: "get vacationResource by id as expected",
@@ -1281,9 +1281,9 @@ func TestInmemoryDB_GetVacationResourceByID(t *testing.T) {
 
 func TestInmemoryDB_ListVacationResource(t *testing.T) {
 	tt := []struct {
-		name                   string
+		name                  string
 		vacationResourceStore []*model.VacationResource
-		wantErr                bool
+		wantErr               bool
 	}{
 		{
 			name:    "empty store",
@@ -1325,15 +1325,15 @@ func TestInmemoryDB_ListVacationResource(t *testing.T) {
 
 func TestInmemoryDB_DeleteVacationResource(t *testing.T) {
 	tt := []struct {
-		name                   string
+		name                  string
 		vacationResourceID    string
 		vacationResourceStore []*model.VacationResource
-		wantErr                bool
+		wantErr               bool
 	}{
 		{
-			name:                "vacationResource does not exist",
+			name:               "vacationResource does not exist",
 			vacationResourceID: "does-not-exist",
-			wantErr:             true,
+			wantErr:            true,
 		},
 		{
 			name: "get vacationResource by id as expected",
@@ -1343,7 +1343,7 @@ func TestInmemoryDB_DeleteVacationResource(t *testing.T) {
 				},
 			},
 			vacationResourceID: "f95128f7-733d-48b3-9306-cc5fe27cf6a5",
-			wantErr:             false,
+			wantErr:            false,
 		},
 	}
 

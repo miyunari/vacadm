@@ -16,12 +16,12 @@ import (
 // the database interface.
 func NewInmemoryDB() *InmemoryDB {
 	return &InmemoryDB{
-		userStore:              make([]*model.User, 0),
-		teamStore:              make([]*model.Team, 0),
-		vacationStore:          make([]*model.Vacation, 0),
-		vacationRequestStore:   make([]*model.VacationRequest, 0),
+		userStore:             make([]*model.User, 0),
+		teamStore:             make([]*model.Team, 0),
+		vacationStore:         make([]*model.Vacation, 0),
+		vacationRequestStore:  make([]*model.VacationRequest, 0),
 		vacationResourceStore: make([]*model.VacationResource, 0),
-		logger:                 logrus.New().WithField("component", "inmemoryDB"),
+		logger:                logrus.New().WithField("component", "inmemoryDB"),
 	}
 }
 
