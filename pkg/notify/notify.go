@@ -19,7 +19,7 @@ type Notifier interface {
 var _ Notifier = (*NoopNotifier)(nil)
 var _ Notifier = (*Mailer)(nil)
 
-// ErrEmptyTeam is returnd if a requested team does not contain users.
+// ErrEmptyTeam is returned if a requested team does not contain users.
 var ErrEmptyTeam = errors.New("team has no member")
 
 // NewNoopNotifier returns a new NoopNotifier.
