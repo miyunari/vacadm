@@ -21,7 +21,7 @@ func shallPass(r *http.Request, db database.RelationDB, rUserID, rTeamID string)
 	userID, errUserID := util.UserIDFromRequest(r)
 	teamID, errTeamID := util.TeamIDFromRequest(r)
 
-	if errUserID == util.ErrDoesNotExistUserID && errTeamID == util.ErrDoesNotExistUserID {
+	if errUserID == util.ErrDoesNotExistUserID && errTeamID == util.ErrDoesNotExistTeamID {
 		return true, nil
 	}
 

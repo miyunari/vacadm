@@ -24,7 +24,7 @@ var (
 func TeamIDFromRequest(r *http.Request) (string, error) {
 	vars := mux.Vars(r)
 	teamID, ok := vars["teamID"]
-	if !ok {
+	if !ok || len(teamID) == 0 {
 		return "", ErrDoesNotExistTeamID
 	}
 	return teamID, nil
@@ -35,7 +35,7 @@ func TeamIDFromRequest(r *http.Request) (string, error) {
 func UserIDFromRequest(r *http.Request) (string, error) {
 	vars := mux.Vars(r)
 	usrID, ok := vars["userID"]
-	if !ok {
+	if !ok || len(usrID) == 0 {
 		return "", ErrDoesNotExistUserID
 	}
 	return usrID, nil

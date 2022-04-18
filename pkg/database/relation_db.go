@@ -30,7 +30,10 @@ type relationDB struct {
 func (r *relationDB) IsParentUser(ctx context.Context, userID, parentID string) (bool, error) {
 	u, err := r.db.GetUserByID(ctx, userID)
 	if err != nil {
-		return false, err
+		return false, nil
+	}
+	if u.ParentID == nil {
+		return true, nil
 	}
 	next := u
 	for next.ParentID != nil {
@@ -50,7 +53,7 @@ func (r *relationDB) IsParentUser(ctx context.Context, userID, parentID string) 
 func (r *relationDB) IsTeamMember(ctx context.Context, teamID, userID string) (bool, error) {
 	u, err := r.db.GetUserByID(ctx, userID)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	if u.TeamID == nil {
 		return false, nil
@@ -62,7 +65,7 @@ func (r *relationDB) IsTeamMember(ctx context.Context, teamID, userID string) (b
 func (r *relationDB) IsTeamOwner(ctx context.Context, teamID, userID string) (bool, error) {
 	t, err := r.db.GetTeamByID(ctx, teamID)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	return t.OwnerID == userID, nil
 }

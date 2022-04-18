@@ -93,7 +93,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.Path("/user/{userID}/vacation/resource/{vacation-resourceID}").Methods(http.MethodPatch).HandlerFunc(vacResSvc.Update)
 	router.Path("/user/{userID}/vacation/resource/{vacation-resourceID}").Methods(http.MethodDelete).HandlerFunc(vacResSvc.Delete)
 	if s.mw != nil {
-		//router.Use(s.mw...)
+		router.Use(s.mw...)
 	}
 
 	router.ServeHTTP(w, r)
