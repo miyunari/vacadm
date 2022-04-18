@@ -3,7 +3,6 @@ package mariadb
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -126,6 +125,11 @@ const (
 			from, to,
 			created_at
 		FROM vacation
+	`
+
+	teamVacationSelect = basicVacationSelect + `
+		INNER JOIN user ON vacation.user_id=user.id
+		WHERE user.team_id = ?
 	`
 
 	vacationSelectByID = basicVacationSelect + `
@@ -570,7 +574,38 @@ func (m *MariaDB) GetVacationByID(ctx context.Context, uuid string) (*model.Vaca
 
 // GetVacationByTeamID returns the list of vacations of one team by given teamID.
 func (m *MariaDB) GetVacationsByTeamID(ctx context.Context, tID string) ([]*model.Vacation, error) {
-	return nil, fmt.Errorf("not implemented yet")
+	teamVacations := make([]*model.Vacation, 0)
+	rows, err := m.db.QueryContext(ctx, teamVacationSelect, tID)
+	if err != nil {
+		return nil, err
+	}
+	var createdAt, from, to sql.NullTime
+	var userID sql.NullString
+	var approvedID sql.NullString
+	for rows.Next() {
+		v := model.Vacation{}
+		err = rows.Scan(&v.ID, &createdAt, &from, &to, &userID, &approvedID)
+		if err != nil {
+			return nil, err
+		}
+		if createdAt.Valid {
+			v.CreatedAt = &createdAt.Time
+		}
+		if from.Valid {
+			v.From = from.Time
+		}
+		if to.Valid {
+			v.To = from.Time
+		}
+		if userID.Valid {
+			v.UserID = userID.String
+		}
+		if approvedID.Valid {
+			v.ApprovedBy = &approvedID.String
+		}
+		teamVacations = append(teamVacations, &v)
+	}
+	return teamVacations, nil
 }
 
 // ListVacations returns a copy of the internal vacation list.
