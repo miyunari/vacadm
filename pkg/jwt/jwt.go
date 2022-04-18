@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/google/uuid"
 )
+
+// ErrMissingSecret indicates that tokenizer does not provide a secret.
+var ErrMissingSecret = fmt.Errorf("missing secret")
 
 // NewTokenizer returns a new Tokenizer.
 func NewTokenizer(hmacSecret []byte, validity time.Duration) *Tokenizer {
@@ -31,6 +35,9 @@ func (t *Tokenizer) Generate(u *model.User) (string, error) {
 	teamID := ""
 	if u.TeamID != nil {
 		teamID = *u.TeamID
+	}
+	if len(t.hmacSecret) == 0 {
+		return "", ErrMissingSecret
 	}
 	claims := &UserClaims{
 		// Refers to model.User
