@@ -75,7 +75,11 @@ func main() {
 	router.Path("/token/new/{userID}").Methods(http.MethodGet).HandlerFunc(token.NewTokenService(db, t).Refresh)
 	apiv1 := v1.NewServer(db, notifier, t, middleware.Logging(), middleware.Auth(t, database.NewRelationDB(db)))
 	const pathPrefixV1 = "/v1"
-	router.Handle(fmt.Sprintf("%s/{dummy}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
+	// HACK: allow sub routes on v1 router.
+	router.Handle(fmt.Sprintf("%s/{dummy1}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
+	router.Handle(fmt.Sprintf("%s/{dummy1}/{dummy2}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
+	router.Handle(fmt.Sprintf("%s/{dummy1}/{dummy2}/{dummy3}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
+	router.Handle(fmt.Sprintf("%s/{dummy1}/{dummy2}/{dummy3}/{dummy4}", pathPrefixV1), http.StripPrefix(pathPrefixV1, apiv1))
 
 	if *swaggerEnabled {
 		logger.Info("swagger endpoint \"/swagger\" enabled")
