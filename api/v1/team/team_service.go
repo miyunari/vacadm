@@ -2,7 +2,9 @@ package team
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
+	"io"
 	"net/http"
 	"time"
 
@@ -189,7 +191,7 @@ func (t *TeamService) Delete(w http.ResponseWriter, r *http.Request) {
 //   "team_id":"1234-456"
 // }
 //
-// Example response:
+// Example response requesting Content-Type json/application:
 // {
 //   "to":"0001-01-01T00:00:00Z",
 //   "from":"0001-01-01T00:00:00Z",
@@ -212,6 +214,12 @@ func (t *TeamService) Delete(w http.ResponseWriter, r *http.Request) {
 //     }
 //   ]
 // }
+//
+// Example response requesting Content-Type csv/application:
+// from,to,teamID,availability,vacation-id,vacation-user_id,vacation-approved_by,vacation-from,vacation-to,vacation-created_at,vacation-deleted_at
+// 2022-04-19 22:23:40.886412444 +0200 CEST m=-258901.921920057,2022-04-25 22:23:40.886412586 +0200 CEST m=+259498.078080085,a7da8eb8-410f-4f6a-8324-1db65a289a13,HIGH,,,,,,,
+//	2022-04-19 22:23:40.886412677 +0200 CEST m=-258901.921919824,2022-04-25 22:23:40.886412747 +0200 CEST m=+259498.078080246,e22b2a12-cf42-44c6-a2ed-c3630ba9583a,HIGH,,,,,,,
+//	2022-04-19 22:23:40.886412822 +0200 CEST m=-258901.921919683,2022-04-25 22:23:40.886412887 +0200 CEST m=+259498.078080386,e22b2a12-cf42-44c6-a2ed-c3630ba9583a,HIGH,,,,,,,
 func (t *TeamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithFields(
 		logrus.Fields{
@@ -336,6 +344,39 @@ func (t *TeamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 		resp = append(resp, window)
 	}
 
+	resp = []*capacityResponse{
+		{
+			From:         time.Now().Add(-3 * 24 * time.Hour),
+			To:           time.Now().Add(3 * 24 * time.Hour),
+			TeamID:       "a7da8eb8-410f-4f6a-8324-1db65a289a13",
+			Availability: "HIGH",
+		},
+		{
+			From:         time.Now().Add(-3 * 24 * time.Hour),
+			To:           time.Now().Add(3 * 24 * time.Hour),
+			TeamID:       "e22b2a12-cf42-44c6-a2ed-c3630ba9583a",
+			Availability: "HIGH",
+		},
+		{
+			From:         time.Now().Add(-3 * 24 * time.Hour),
+			To:           time.Now().Add(3 * 24 * time.Hour),
+			TeamID:       "e22b2a12-cf42-44c6-a2ed-c3630ba9583a",
+			Availability: "HIGH",
+		},
+	}
+
+	if r.Header.Get("Content-Type") == "application/csv" {
+		if err := new(capacityResponse).WriteCSVHeader(w); err != nil {
+			logger.Error(err)
+		}
+		for _, set := range resp {
+			if err := set.WriteCSV(w); err != nil {
+				logger.Error(err)
+			}
+		}
+		return
+	}
+
 	err = json.NewEncoder(w).Encode(&resp)
 	if err != nil {
 		logger.Error(err)
@@ -389,6 +430,48 @@ type capacityResponse struct {
 
 	// NOTE: Only with sufficient authorization
 	Vacation []*model.Vacation `json:"vacations"`
+}
+
+func (c *capacityResponse) WriteCSVHeader(w io.Writer) error {
+	wr := csv.NewWriter(w)
+	defer wr.Flush()
+	wr.Write([]string{
+		"from", "to", "teamID", "availability",
+		"vacation-id", "vacation-user_id", "vacation-approved_by",
+		"vacation-from", "vacation-to", "vacation-created_at", "vacation-deleted_at",
+	})
+	return nil
+}
+
+func (c *capacityResponse) WriteCSV(w io.Writer) error {
+	wr := csv.NewWriter(w)
+	defer wr.Flush()
+	if len(c.Vacation) == 0 {
+		wr.Write([]string{
+			c.From.String(), c.To.String(), c.TeamID, c.Availability,
+			"", "", "", "", "", "", "",
+		})
+		return nil
+	}
+	for _, vac := range c.Vacation {
+		var approvedBy string
+		if vac.ApprovedBy != nil {
+			approvedBy = *vac.ApprovedBy
+		}
+		var createdAt, deletedAt string
+		if vac.CreatedAt != nil {
+			createdAt = vac.CreatedAt.String()
+		}
+		if vac.DeletedAt != nil {
+			deletedAt = vac.DeletedAt.String()
+		}
+		wr.Write([]string{
+			c.From.String(), c.To.String(), c.TeamID, c.Availability,
+			vac.ID, vac.UserID, approvedBy,
+			vac.From.String(), vac.To.String(), createdAt, deletedAt,
+		})
+	}
+	return nil
 }
 
 type teamBundle struct {
