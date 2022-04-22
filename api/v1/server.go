@@ -3,6 +3,9 @@ package v1
 import (
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+
 	"github.com/MninaTB/vacadm/api/v1/team"
 	"github.com/MninaTB/vacadm/api/v1/user"
 	"github.com/MninaTB/vacadm/api/v1/vacation"
@@ -10,8 +13,6 @@ import (
 	vacationresources "github.com/MninaTB/vacadm/api/v1/vacation_resource"
 	"github.com/MninaTB/vacadm/pkg/database"
 	"github.com/MninaTB/vacadm/pkg/notify"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 // Tokenizer implements methods to verify auth tokens.
