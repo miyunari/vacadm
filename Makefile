@@ -43,7 +43,7 @@ vet:
 
 .PHONY: test
 test:
-	$(GO) test -v ./cmd/... ./pkg/...
+	$(GO) test -v -coverprofile cover.out ./cmd/... ./pkg/...
 
 .PHONY: test-integration
 test-integration:
