@@ -39,7 +39,7 @@ type TokenService struct {
 // Refresh verifies user permissions based on the given token. If a user is
 // autorized a new token will be generated and returned in the response body.
 // Payload example:
-// {"Token":"a6f9f420-0c43-4527-8178-fe53a2a66302"}
+// {"token":"a6f9f420-0c43-4527-8178-fe53a2a66302"}
 func (t *TokenService) Refresh(w http.ResponseWriter, r *http.Request) {
 	logger := t.logger.WithField("method", "refresh")
 
@@ -91,7 +91,7 @@ func (t *TokenService) Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		Token string
+		Token string `json:"token"`
 	}{
 		Token: newToken,
 	}
