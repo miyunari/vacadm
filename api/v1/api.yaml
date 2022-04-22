@@ -4,7 +4,7 @@ info:
   description: REST-API Spezifikation
   version: 0.0.1
 servers:
-  - url: http://localhost:8080/v1
+  - url: http://localhost:8080/
     description: ""
 security:
   - BearerAuth: []
@@ -69,6 +69,50 @@ components:
       example:
         owner_id: "1ff63524-156f-466d-b287-4258811444dd"
         last_name: "Example-Team"
+
+    Team_Capacity_Request:
+      properties:
+        team_id:
+          type: string
+        from:
+          type: string
+          format: date
+          example: "2022-04-06"
+        to:
+          type: string
+          format: date
+          example: "2022-04-07"
+      example:
+        team_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        from: "2022-04-05"
+        to: "2022-04-05"
+
+    Team_Capacity_Response:
+      properties:
+        team_id:
+          type: string
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        availability:
+          type: string
+        vacations:
+        - $ref: '#/components/schemas/Vacation_Response'
+
+      example:
+        team_id: "1ff63524-156f-466d-b287-4258811444dd"        
+        user_id: "eff635b4-152f-436d-b2v7-425l811454td"
+        approved_by: null
+        from: "2022-04-06"
+        to: "2022-04-07"
+        created_at: null
+        list_of_something:
+        vacations:
+        - $ref: '#/components/schemas/Vacation_Response'
+
 
     Team_Response:
       properties:
@@ -218,9 +262,16 @@ components:
         to: "2022-04-07"
         created_at: "2022-04-05T08:57:32Z"
         updated_at: "2022-04-05T08:57:32Z"
+    
+    Token_Refresh_Response:
+      properties:
+        token:
+          type: string
+      example:
+        token: "1ff63524-156f-466d-b287-4258811444dd"        
 
 paths:
-  /user:
+  /v1/user:
     put:
       summary: Create new user 
       description: ""
@@ -265,7 +316,7 @@ paths:
           description: "Unexpected error."
 
 
-  /user/{user_id}:
+  /v1/user/{user_id}:
     get:
       summary: Gets the user by id
       description: ""
@@ -274,7 +325,7 @@ paths:
           required: true
           name: user_id
           schema:
-            type: integer
+            type: string
       tags: 
         - User
       responses:
@@ -302,7 +353,7 @@ paths:
           required: true
           name: user_id
           schema:
-            type: integer
+            type: string
       requestBody:
         content:
           application/json:
@@ -334,7 +385,7 @@ paths:
           required: true
           name: user_id
           schema:
-            type: integer
+            type: string
       tags:
         - User
       responses:
@@ -349,7 +400,7 @@ paths:
         "5XX":
           description: "Unexpected error."
 
-  /team:
+  /v1/team:
     put:
       summary: Create new team 
       description: ""
@@ -396,7 +447,7 @@ paths:
           description: "Unexpected error."
 
 
-  /team/{team_id}:
+  /v1/team/{team_id}:
     get:
       summary: Gets the team by id
       description: ""
@@ -405,7 +456,7 @@ paths:
           required: true
           name: team_id
           schema:
-            type: integer
+            type: string
       tags: 
         - Team
       responses:
@@ -432,7 +483,7 @@ paths:
           required: true
           name: team_id
           schema:
-            type: integer
+            type: string
       requestBody:
         content:
           application/json:
@@ -464,7 +515,7 @@ paths:
           required: true
           name: team_id
           schema:
-            type: integer
+            type: string
       tags:
         - Team
       responses:
@@ -479,7 +530,7 @@ paths:
         "5XX":
           description: "Unexpected error."
 
-  /team/{team_id}/list-users:
+  /v1/team/{team_id}/list-users:
     get:
       summary: list all users from one team by team id
       description: ""
@@ -488,7 +539,7 @@ paths:
           required: true
           name: team_id
           schema:
-            type: integer
+            type: string
       tags:
         - Team
       responses:
@@ -506,11 +557,50 @@ paths:
           description: "Authorization information is missing or invalid."
         "5XX":
           description: "Unexpected error."
-
-  /user/{user_id}/vacation:    
+    
+  /v1/team/{team_id}/list-capacity:
+    post:
+      summary: lists teams and their availability for the requested period
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: team_id
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Team_Capacity_Request"
+      tags:
+        - Team
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team_Capacity_Response'
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "A team with the given ID was not found."
+        "5XX":
+          description: "Unexpected error."
+  
+  /v1/user/{user_id}/vacation:    
     get:
       summary: List all vacations
       description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
       tags:
         - Vacation
       responses:
@@ -531,16 +621,21 @@ paths:
         "5XX":
           description: "Unexpected error."
 
-  /user/{user_id}/vacation/{vacation_id}:
+  /v1/user/{user_id}/vacation/{vacation_id}:
     get:
       summary: Gets the vacation by id
       description: ""
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: vacation_id
           schema:
-            type: integer
+            type: string
       tags: 
         - Vacation
       responses:
@@ -565,9 +660,14 @@ paths:
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: vacation_id
           schema:
-            type: integer
+            type: string
       tags:
         - Vacation
       responses:
@@ -582,10 +682,16 @@ paths:
         "5XX":
           description: "Unexpected error."
 
-  /user/{user_id}/vacation/request:
+  /v1/user/{user_id}/vacation/request:
     put:
       summary: Create new vacation-request 
       description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -612,6 +718,12 @@ paths:
     get:
       summary: List all vacation-requests
       description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
       tags:
         - Vacation-Request
       responses:
@@ -632,16 +744,59 @@ paths:
         "5XX":
           description: "Unexpected error."
 
-  /user/{user_id}/vacation/request/{id}:
+  /v1/user/{user_id}/vacation/request/{id}/approve/{parent_id}:
+    get:
+      summary: With this endpoint a user is able to approve a request, if the permissions are correct
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
+        - in: path
+          required: true
+          name: parent_id
+          schema:
+            type: string
+      tags: 
+        - Vacation-Request
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vacation_Response"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+
+  /v1/user/{user_id}/vacation/request/{id}:
     get:
       summary: Gets the vacation-request by id
       description: ""
       parameters:
         - in: path
           required: true
-          name: vacation_id
+          name: user_id
           schema:
-            type: integer
+            type: string
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
       tags: 
         - Vacation-Request
       responses:
@@ -666,9 +821,14 @@ paths:
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: id
           schema:
-            type: integer
+            type: string
       requestBody:
         content:
           application/json:
@@ -698,9 +858,14 @@ paths:
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: id
           schema:
-            type: integer
+            type: string
       tags:
         - Vacation-Request
       responses:
@@ -714,11 +879,17 @@ paths:
           description: "Requested ressource does not exist."
         "5XX":
           description: "Unexpected error."
-
-  /user/{user_id}/vacation/ressource:
+  
+  /v1/user/{user_id}/vacation/ressource:
     put:
       summary: Create new vacation-ressource
       description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -745,6 +916,12 @@ paths:
     get:
       summary: List all vacation-ressources
       description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
       tags:
         - Vacation-Ressource
       responses:
@@ -765,16 +942,21 @@ paths:
         "5XX":
           description: "Unexpected error."
 
-  /user/{user_id}/vacation/ressource/{id}:
+  /v1/user/{user_id}/vacation/ressource/{id}:
     get:
       summary: Gets the vacation-ressource of one user by user id and vacation-ressource id
       description: ""
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: id
           schema:
-            type: integer
+            type: string
       tags: 
         - Vacation-Ressource
       responses:
@@ -799,9 +981,14 @@ paths:
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: id
           schema:
-            type: integer
+            type: string
       requestBody:
         content:
           application/json:
@@ -831,14 +1018,47 @@ paths:
       parameters:
         - in: path
           required: true
+          name: user_id
+          schema:
+            type: string
+        - in: path
+          required: true
           name: id
           schema:
-            type: integer
+            type: string
       tags:
         - Vacation-Ressource
       responses:
         "202":
           description: "vacation-ressource successfully deleted"
+        "400":
+          description: "Bad request. Could not decode body."
+        "401":
+          description: "Authorization information is missing or invalid."
+        "404":
+          description: "Requested ressource does not exist."
+        "5XX":
+          description: "Unexpected error."
+  
+  /token/new/{user_id}:
+    get:
+      summary: Refresh verifies user permissions based on the given token. 
+      description: ""
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          schema:
+            type: string
+      tags: 
+        - Token
+      responses:
+        "200":
+          description: ""
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token_Refresh_Response"
         "400":
           description: "Bad request. Could not decode body."
         "401":
