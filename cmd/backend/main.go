@@ -88,8 +88,8 @@ func main() {
 
 	if *initRoot {
 		u := &model.User{
-			FirstName: "nina",
-			LastName:  "olear",
+			FirstName: "Max",
+			LastName:  "Mustermann",
 			Email:     "admin@inform.de",
 		}
 		u, err := db.CreateUser(context.Background(), u)
