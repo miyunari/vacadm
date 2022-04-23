@@ -3,6 +3,7 @@ package notify
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/smtp"
 
 	"github.com/sirupsen/logrus"
@@ -91,8 +92,8 @@ func (m *Mailer) NotifyUser(ctx context.Context, userID, action string) error {
 		return err
 	}
 
-	message := []byte(action)
-	return smtp.SendMail(m.address, m.auth, m.from, []string{usr.Email}, message)
+	message := RFC822(m.from, usr.Email, "Vacation Serivce", action)
+	return smtp.SendMail(m.address, m.auth, m.from, []string{usr.Email}, []byte(message))
 }
 
 // NotifyTeam sends e-Mails a all users in a Team based on the given teamID.
@@ -117,6 +118,28 @@ func (m *Mailer) NotifyTeam(ctx context.Context, teamID, action string) error {
 		return ErrEmptyTeam
 	}
 
-	message := []byte(action)
-	return smtp.SendMail(m.address, m.auth, m.from, to, message)
+	team, err := m.db.GetTeamByID(ctx, teamID)
+	if err != nil {
+		return err
+	}
+
+	// displayed receiver
+	displayedReceiver := fmt.Sprintf("team-%s@inform-software.de", team.Name)
+	message := RFC822(m.from, displayedReceiver, "Vacation Serivce", action)
+	return smtp.SendMail(m.address, m.auth, m.from, to, []byte(message))
+}
+
+// RFC822 returns a well formatted mail.
+// From: someone@example.com
+// To: someone_else@example.com
+// Subject: An RFC 822 formatted message
+//
+// This is the plain text body of the message. Note the blank line
+// between the header information and the body of the message.
+func RFC822(from, to, subject, body string) string {
+	res := fmt.Sprintf("From: %s\n", from)
+	res += fmt.Sprintf("To: %s\n", to)
+	res += fmt.Sprintf("Subject: %s\n", subject)
+	res += fmt.Sprintf("\n%s\n", body)
+	return res
 }
