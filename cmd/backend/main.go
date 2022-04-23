@@ -27,14 +27,11 @@ import (
 
 func main() {
 	var (
-		// TODO: set swagger default value to false
-		swaggerEnabled = flag.Bool("swagger.enable", true, "enables /swagger endpoint")
-		// TODO: set initRoot default value to false
-		initRoot = flag.Bool("init.root", true, "create root user on startup")
-		address  = flag.String("address", "localhost:8080", "ip:port")
-		// TODO: remove weak default secret
-		jwtKey     = flag.String("secret", "my-secret", "secret for jwt token")
-		sqlConnStr = flag.String("sql.conn", "", `sql connection str. user:password@/dbname
+		swaggerEnabled = flag.Bool("swagger.enable", false, "enables /swagger endpoint")
+		initRoot       = flag.Bool("init.root", false, "create root user on startup")
+		address        = flag.String("address", "localhost:8080", "ip:port")
+		jwtKey         = flag.String("secret", "", "secret for jwt token")
+		sqlConnStr     = flag.String("sql.conn", "", `sql connection str. user:password@/dbname
 		example: root:my-secret-pw@(127.0.0.1:3306)/test?parseTime=true`)
 		srvTimeout   = flag.Duration("timeout", time.Minute, "server timeout")
 		smtpHost     = flag.String("smtp.host", "", "address of smtp server")
