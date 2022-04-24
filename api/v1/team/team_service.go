@@ -335,34 +335,13 @@ func (t *TeamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 		}
 		ratio := workDays / daysOfVacation
 		if ratio > 0.8 {
-			window.Availability = "LOW"
+			window.Availability = "HIGH"
 		} else if ratio <= 0.8 && ratio > 0.25 {
 			window.Availability = "MEDIUM"
 		} else {
-			window.Availability = "HIGH"
+			window.Availability = "LOW"
 		}
 		resp = append(resp, window)
-	}
-
-	resp = []*capacityResponse{
-		{
-			From:         time.Now().Add(-3 * 24 * time.Hour),
-			To:           time.Now().Add(3 * 24 * time.Hour),
-			TeamID:       "a7da8eb8-410f-4f6a-8324-1db65a289a13",
-			Availability: "HIGH",
-		},
-		{
-			From:         time.Now().Add(-3 * 24 * time.Hour),
-			To:           time.Now().Add(3 * 24 * time.Hour),
-			TeamID:       "e22b2a12-cf42-44c6-a2ed-c3630ba9583a",
-			Availability: "HIGH",
-		},
-		{
-			From:         time.Now().Add(-3 * 24 * time.Hour),
-			To:           time.Now().Add(3 * 24 * time.Hour),
-			TeamID:       "e22b2a12-cf42-44c6-a2ed-c3630ba9583a",
-			Availability: "HIGH",
-		},
 	}
 
 	if r.Header.Get("Content-Type") == "application/csv" {
