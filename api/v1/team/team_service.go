@@ -272,9 +272,7 @@ func (t *TeamService) ListCapacity(w http.ResponseWriter, r *http.Request) {
 			teamOwnerID: team.OwnerID,
 			teamID:      request.TeamID,
 		})
-	}
-
-	if len(teamsBundle) == 0 {
+	} else {
 		teams, err := t.store.ListTeams(r.Context())
 		if err != nil {
 			logger.Error(err)
