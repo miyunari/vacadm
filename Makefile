@@ -7,6 +7,7 @@ APPS=$(shell ls cmd)
 GOLINTCI_FILE=golangci-lint
 LINT_PATH=$(shell pwd)/bin
 GOLINTCI=$(LINT_PATH)/$(GOLINTCI_FILE)
+CONTAINER_IMAGE=ghcr.io/miyunari/vacadm
 
 LDFLAGS=-ldflags "-s -w \
 	 -X ${MODULE}/pkg/version.hash=${GIT_VER} \
@@ -48,6 +49,10 @@ test:
 .PHONY: test-integration
 test-integration:
 		$(GO) test -v ./tests/...
+
+.PHONY: image_amd64
+image_amd64: 
+	docker build -f Dockerfile -t ${CONTAINER_IMAGE} .
 
 .PHONY: clean
 clean:
